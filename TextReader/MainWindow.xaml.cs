@@ -46,8 +46,6 @@ public partial class MainWindow : Window
         {
             _state.IsLoading = true;
 
-            FlowDocument doc = new FlowDocument();
-
             string extension = Path.GetExtension(dialog.FileName);
             if (extension != ".txt" && extension != ".docx")
             {
@@ -57,16 +55,13 @@ public partial class MainWindow : Window
             }
             else if (extension == ".docx")
             {
-                string text = FileService.LoadDocx(dialog.FileName);
-                doc.Blocks.Add(new Paragraph(new Run(text)));
+                Editor.Document = FileService.LoadDocxAsFlowDocument(dialog.FileName);
             }
             else if (extension == ".txt")
             {
                 string text = File.ReadAllText(dialog.FileName);
-                doc.Blocks.Add(new Paragraph(new Run(text)));
+                Editor.Document = new FlowDocument(new Paragraph(new Run(text)));
             }
-
-            Editor.Document = doc;
 
             _state.IsLoading = false;
             _state.CurrentFilePath = dialog.FileName;

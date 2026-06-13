@@ -1,13 +1,13 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
+using Microsoft.Win32;
 using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-
-using Wpf = System.Windows.Documents;
+using System.Windows.Documents;
 using Docx = DocumentFormat.OpenXml.Wordprocessing;
-using Microsoft.Win32;
+using Wpf = System.Windows.Documents;
 
 
 
@@ -38,35 +38,33 @@ public static class FileService
         File.WriteAllText(dialog.FileName, text);
         return dialog.FileName;
     }
-
-    public static string LoadDocx(string path)
+    public static FlowDocument LoadDocxAsFlowDocument(string path)
     {
-        if (!File.Exists(path))
-            return string.Empty;
+        FlowDocument document = new FlowDocument();
 
-        FileInfo info = new(path);
+        using WordprocessingDocument doc =
+            WordprocessingDocument.Open(path, false);
 
-        if (info.Length == 0)
-            return string.Empty;
+        var body = doc.MainDocumentPart?.Document?.Body;
 
-        StringBuilder sb = new();
+        if (body == null)
+            return document;
 
-        using (WordprocessingDocument doc =
-               WordprocessingDocument.Open(path, false))
+        foreach (var para in body.Elements<Docx.Paragraph>())
         {
-            var body = doc.MainDocumentPart?.Document?.Body;
+            var wpfParagraph = new Wpf.Paragraph();
 
-            if (body == null)
-                return string.Empty;
-
-            foreach (Docx.Paragraph paragraph in body.Elements<Docx.Paragraph>())
+            foreach (var run in para.Elements<Docx.Run>())
             {
-                sb.AppendLine(paragraph.InnerText);
+                wpfParagraph.Inlines.Add(DocxMapper.ToWpfRun(run));
             }
+
+            document.Blocks.Add(wpfParagraph);
         }
 
-        return sb.ToString();
+        return document;
     }
+
 
     public static void SaveDocx(string path, string text)
     {
@@ -110,36 +108,7 @@ public static class FileService
                 {
                     if (inline is Wpf.Run wpfRun)
                     {
-                        var run = new Docx.Run();
-
-                        var text = new Docx.Text(wpfRun.Text ?? "")
-                        {
-                            Space = SpaceProcessingModeValues.Preserve
-                        };
-
-                        var props = new Docx.RunProperties();
-
-                        // BOLD
-                        if (wpfRun.FontWeight == FontWeights.Bold)
-                            props.Append(new Docx.Bold());
-
-                        // ITALIC
-                        if (wpfRun.FontStyle == FontStyles.Italic)
-                            props.Append(new Docx.Italic());
-
-                        // UNDERLINE
-                        if (wpfRun.TextDecorations == System.Windows.TextDecorations.Underline)
-                            props.Append(new Docx.Underline());
-
-                        // STRIKE
-                        if (wpfRun.TextDecorations == System.Windows.TextDecorations.Strikethrough)
-                            props.Append(new Docx.Strike());
-
-                        if (props.HasChildren)
-                            run.Append(props);
-
-                        run.Append(text);
-                        newParagraph.Append(run);
+                        newParagraph.Append(DocxMapper.ToDocxRun(wpfRun));
                     }
                 }
 
@@ -150,4 +119,5 @@ public static class FileService
         mainPart.Document = new Docx.Document(body);
         mainPart.Document.Save();
     }
+
 }
