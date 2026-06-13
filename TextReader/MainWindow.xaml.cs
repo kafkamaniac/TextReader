@@ -1,10 +1,11 @@
 ﻿using Microsoft.Win32;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using TextReader.Models;
 using TextReader.Services;
-using System.ComponentModel;
 
 namespace TextReader;
 
@@ -19,11 +20,11 @@ public partial class MainWindow : Window
 
     private void New_Click(object sender, RoutedEventArgs e)
     {
-        if (!EditorStateService.AskToSave(_state, Editor.Text))
+        if (!EditorStateService.AskToSave(_state, GetText()))
             return;
 
-        Editor.Clear();
-        
+        Editor.Document = new FlowDocument();
+
         _state.IsModified = false;
         _state.CurrentFilePath = null;
 
@@ -32,7 +33,8 @@ public partial class MainWindow : Window
 
     private void Open_Click(object sender, RoutedEventArgs e)
     {
-        if (!EditorStateService.AskToSave(_state, Editor.Text))
+
+        if (!EditorStateService.AskToSave(_state, GetText()))
             return;
 
         OpenFileDialog dialog = new OpenFileDialog();
@@ -44,6 +46,8 @@ public partial class MainWindow : Window
         {
             _state.IsLoading = true;
 
+            FlowDocument doc = new FlowDocument();
+
             string extension = Path.GetExtension(dialog.FileName);
             if (extension != ".txt" && extension != ".docx")
             {
@@ -53,14 +57,16 @@ public partial class MainWindow : Window
             }
             else if (extension == ".docx")
             {
-                Editor.Text = FileService.LoadDocx(dialog.FileName);
+                string text = FileService.LoadDocx(dialog.FileName);
+                doc.Blocks.Add(new Paragraph(new Run(text)));
             }
             else if (extension == ".txt")
             {
-                Editor.Text = File.ReadAllText(dialog.FileName);
+                string text = File.ReadAllText(dialog.FileName);
+                doc.Blocks.Add(new Paragraph(new Run(text)));
             }
 
-            _state.CurrentFilePath = dialog.FileName;
+            Editor.Document = doc;
 
             _state.IsLoading = false;
             _state.CurrentFilePath = dialog.FileName;
@@ -82,13 +88,15 @@ public partial class MainWindow : Window
 
         string path = dialog.FileName;
         string ext = Path.GetExtension(path);
+        string text = GetText();
+
         if (ext == ".txt")
         {
-            FileService.SaveText(path, Editor.Text);
+            FileService.SaveText(path, text);
         }
         else if (ext == ".docx")
         {
-            FileService.SaveDocx(path, Editor.Text);
+            FileService.SaveDocxFromRichTextBox(path, Editor);
         }
             _state.CurrentFilePath = path;
             _state.IsModified = false;
@@ -96,6 +104,27 @@ public partial class MainWindow : Window
             EditorStateService.UpdateTitle(this, _state);
 
     }
+
+    private void Bold_Click(object sender, RoutedEventArgs e)
+    {
+        TextFormatService.ToggleBold(Editor);
+    }
+
+    private void Italic_Click(object sender, RoutedEventArgs e)
+    {
+        TextFormatService.ToggleItalic(Editor);
+    }
+
+    private void Underline_Click(object sender, RoutedEventArgs e)
+    {
+        TextFormatService.ToggleUnderline(Editor);
+    }
+
+    private void Strike_Click(object sender, RoutedEventArgs e)
+    {
+        TextFormatService.ToggleStrike(Editor);
+    }
+
 
     private void Editor_TextChanged(object sender, TextChangedEventArgs e)
     {
@@ -109,11 +138,16 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object sender, CancelEventArgs e)
     {
-        if (!EditorStateService.AskToSave(_state, Editor.Text))
+        if (!EditorStateService.AskToSave(_state, GetText()))
         {
             e.Cancel = true;
         }
     }
-
-
+    private string GetText()
+    {
+        return new TextRange(
+            Editor.Document.ContentStart,
+            Editor.Document.ContentEnd
+        ).Text;
+    }
 }

@@ -1,9 +1,15 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Wordprocessing;
-using Microsoft.Win32;
 using System.IO;
 using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+
+using Wpf = System.Windows.Documents;
+using Docx = DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.Win32;
+
+
 
 namespace TextReader.Services;
 
@@ -21,18 +27,17 @@ public static class FileService
 
     public static string? SaveTextAs(string text)
     {
-        SaveFileDialog dialog = new();
-
-        dialog.Filter = "Text Files (*.txt)|*.txt";
+        SaveFileDialog dialog = new()
+        {
+            Filter = "Text Files (*.txt)|*.txt"
+        };
 
         if (dialog.ShowDialog() != true)
             return null;
 
         File.WriteAllText(dialog.FileName, text);
-
         return dialog.FileName;
     }
-
 
     public static string LoadDocx(string path)
     {
@@ -44,25 +49,17 @@ public static class FileService
         if (info.Length == 0)
             return string.Empty;
 
-
         StringBuilder sb = new();
 
-        using (WordprocessingDocument doc = WordprocessingDocument.Open(path, false))
+        using (WordprocessingDocument doc =
+               WordprocessingDocument.Open(path, false))
         {
-            var mainPart = doc.MainDocumentPart;
-            if (mainPart == null || mainPart.Document == null || mainPart.Document.Body == null)
-            {
-                throw new InvalidDataException("The .docx file is missing required document structure.");
-            }
-
-            Body? body = mainPart.Document.Body;
+            var body = doc.MainDocumentPart?.Document?.Body;
 
             if (body == null)
-            {
-                throw new InvalidDataException("The .docx file is missing required document body.");
-            }
+                return string.Empty;
 
-            foreach (Paragraph paragraph in body.Elements<Paragraph>())
+            foreach (Docx.Paragraph paragraph in body.Elements<Docx.Paragraph>())
             {
                 sb.AppendLine(paragraph.InnerText);
             }
@@ -71,27 +68,86 @@ public static class FileService
         return sb.ToString();
     }
 
-
     public static void SaveDocx(string path, string text)
     {
         using WordprocessingDocument doc =
-            WordprocessingDocument.Create(
-                path,
-                WordprocessingDocumentType.Document);
+            WordprocessingDocument.Create(path, WordprocessingDocumentType.Document);
 
-        MainDocumentPart mainPart = doc.AddMainDocumentPart();
-        mainPart.Document = new Document(new Body());
+        var mainPart = doc.AddMainDocumentPart();
+        mainPart.Document = new Docx.Document(new Docx.Body());
 
-        Body? body = mainPart.Document.Body;
+        var body = mainPart.Document.Body;
 
-        Paragraph paragraph = new Paragraph();
-        Run run = new Run();
-        run.Append(new Text(text));
+        var paragraph = new Docx.Paragraph();
+        var run = new Docx.Run();
+
+        run.Append(new Docx.Text(text));
 
         paragraph.Append(run);
-        body?.Append(paragraph);
+        body.Append(paragraph);
 
         mainPart.Document.Save();
     }
 
+    public static void SaveDocxFromRichTextBox(string path, RichTextBox editor)
+    {
+        using WordprocessingDocument doc =
+            WordprocessingDocument.Create(path, WordprocessingDocumentType.Document);
+
+        var mainPart = doc.AddMainDocumentPart();
+
+        var body = new Docx.Body();
+
+        Wpf.FlowDocument flow = editor.Document;
+
+        foreach (Wpf.Block block in flow.Blocks)
+        {
+            if (block is Wpf.Paragraph paragraph)
+            {
+                var newParagraph = new Docx.Paragraph();
+
+                foreach (Wpf.Inline inline in paragraph.Inlines)
+                {
+                    if (inline is Wpf.Run wpfRun)
+                    {
+                        var run = new Docx.Run();
+
+                        var text = new Docx.Text(wpfRun.Text ?? "")
+                        {
+                            Space = SpaceProcessingModeValues.Preserve
+                        };
+
+                        var props = new Docx.RunProperties();
+
+                        // BOLD
+                        if (wpfRun.FontWeight == FontWeights.Bold)
+                            props.Append(new Docx.Bold());
+
+                        // ITALIC
+                        if (wpfRun.FontStyle == FontStyles.Italic)
+                            props.Append(new Docx.Italic());
+
+                        // UNDERLINE
+                        if (wpfRun.TextDecorations == System.Windows.TextDecorations.Underline)
+                            props.Append(new Docx.Underline());
+
+                        // STRIKE
+                        if (wpfRun.TextDecorations == System.Windows.TextDecorations.Strikethrough)
+                            props.Append(new Docx.Strike());
+
+                        if (props.HasChildren)
+                            run.Append(props);
+
+                        run.Append(text);
+                        newParagraph.Append(run);
+                    }
+                }
+
+                body.Append(newParagraph);
+            }
+        }
+
+        mainPart.Document = new Docx.Document(body);
+        mainPart.Document.Save();
+    }
 }
