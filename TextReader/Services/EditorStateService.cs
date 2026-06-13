@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Windows;
 using TextReader.Models;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TextReader.Services;
 
@@ -17,7 +18,7 @@ public static class EditorStateService
             : fileName;
     }
 
-    public static bool AskToSave(EditorState state)
+    public static bool AskToSave(EditorState state, string text)
     {
         if (!state.IsModified)
             return true;
@@ -28,11 +29,23 @@ public static class EditorStateService
             MessageBoxButton.YesNoCancel,
             MessageBoxImage.Question);
 
-        return result switch
+        switch (result)
         {
-            MessageBoxResult.Yes => true,
-            MessageBoxResult.No => true,
-            _ => false
-        };
+            case MessageBoxResult.Yes:
+                string? path = FileService.SaveTextAs(text);
+                if (path != null)
+                {
+                    state.CurrentFilePath = path;
+                    state.IsModified = false;
+                }
+
+                return true;
+
+            case MessageBoxResult.No:
+                return true;
+
+            default:
+                return false;
+        }
     }
 }

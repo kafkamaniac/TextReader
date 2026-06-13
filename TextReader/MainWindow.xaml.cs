@@ -19,7 +19,7 @@ public partial class MainWindow : Window
 
     private void New_Click(object sender, RoutedEventArgs e)
     {
-        if (!EditorStateService.AskToSave(_state))
+        if (!EditorStateService.AskToSave(_state, Editor.Text))
             return;
 
         Editor.Clear();
@@ -32,7 +32,7 @@ public partial class MainWindow : Window
 
     private void Open_Click(object sender, RoutedEventArgs e)
     {
-        if (!EditorStateService.AskToSave(_state))
+        if (!EditorStateService.AskToSave(_state, Editor.Text))
             return;
 
         OpenFileDialog dialog = new OpenFileDialog();
@@ -83,7 +83,7 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object sender, CancelEventArgs e)
     {
-        if (!EditorStateService.AskToSave(_state))
+        if (!EditorStateService.AskToSave(_state, Editor.Text))
         {
             e.Cancel = true;
         }
