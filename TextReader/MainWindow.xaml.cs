@@ -37,12 +37,29 @@ public partial class MainWindow : Window
 
         OpenFileDialog dialog = new OpenFileDialog();
 
-        dialog.Filter = "Text Files (*.txt)|*.txt";
+        dialog.Filter =
+    "Все файлы (*.*)|*.*|Текстовые файлы (*.txt)|*.txt|Документы Word (*.docx)|*.docx";
 
         if (dialog.ShowDialog() == true)
         {
             _state.IsLoading = true;
-            Editor.Text = File.ReadAllText(dialog.FileName);
+
+            string extension = Path.GetExtension(dialog.FileName);
+            if (extension != ".txt" && extension != ".docx")
+            {
+                MessageBox.Show("Неподдерживаемый формат файла.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                _state.IsLoading = false;
+                return;
+            }
+            else if (extension == ".docx")
+            {
+                Editor.Text = FileService.LoadDocx(dialog.FileName);
+            }
+            else if (extension == ".txt")
+            {
+                Editor.Text = File.ReadAllText(dialog.FileName);
+            }
+
             _state.CurrentFilePath = dialog.FileName;
 
             _state.IsLoading = false;
@@ -50,7 +67,6 @@ public partial class MainWindow : Window
             _state.IsModified = false;
 
             EditorStateService.UpdateTitle(this, _state);
-
 
         }
 
@@ -60,15 +76,25 @@ public partial class MainWindow : Window
     {
         SaveFileDialog dialog = new SaveFileDialog();
 
-        dialog.Filter = "Text Files (*.txt)|*.txt";
+        dialog.Filter = "Text Files (*.txt)|*.txt|Word Documents (*.docx)|*.docx";
 
-        if (dialog.ShowDialog() == true)
+        if (dialog.ShowDialog() != true) return;
+
+        string path = dialog.FileName;
+        string ext = Path.GetExtension(path);
+        if (ext == ".txt")
         {
-            File.WriteAllText(dialog.FileName, Editor.Text);
-            _state.CurrentFilePath = dialog.FileName;
+            FileService.SaveText(path, Editor.Text);
+        }
+        else if (ext == ".docx")
+        {
+            FileService.SaveDocx(path, Editor.Text);
+        }
+            _state.CurrentFilePath = path;
             _state.IsModified = false;
             _state.IsLoading = false;
-        }
+            EditorStateService.UpdateTitle(this, _state);
+
     }
 
     private void Editor_TextChanged(object sender, TextChangedEventArgs e)
