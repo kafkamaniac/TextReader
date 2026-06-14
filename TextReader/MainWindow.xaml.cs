@@ -120,6 +120,26 @@ public partial class MainWindow : Window
         TextFormatService.ToggleStrike(Editor);
     }
 
+    private void AlignLeft_Click(object sender, RoutedEventArgs e)
+    {
+        TextFormatService.AlignLeft(Editor);
+    }
+
+    private void AlignCenter_Click(object sender, RoutedEventArgs e)
+    {
+        TextFormatService.AlignCenter(Editor);
+    }
+
+    private void AlignRight_Click(object sender, RoutedEventArgs e)
+    {
+        TextFormatService.AlignRight(Editor);
+    }
+
+    private void Justify_Click(object sender, RoutedEventArgs e)
+    {
+        TextFormatService.Justify(Editor);
+    }
+
 
     private void Editor_TextChanged(object sender, TextChangedEventArgs e)
     {

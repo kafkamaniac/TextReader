@@ -7,7 +7,8 @@ namespace TextReader.Services;
 
 public static class DocxMapper
 {
-    public static Docx.Run ToDocxRun(Wpf.Run wpfRun)
+    public static Docx.Run ToDocxRun(Wpf.Run wpfRun) //проходимся по куску текста с одинаковым форматированием
+                                                     
     {
         var run = new Docx.Run();
 
@@ -64,5 +65,73 @@ public static class DocxMapper
         }
 
         return wpfRun;
+    }
+
+    public static Docx.Body ToDocxBody(Wpf.FlowDocument document)
+    {
+        var body = new Docx.Body();
+
+        //using Wpf = System.Windows.Documents; то есть для каждого блока в нашем FlowDocument, мы проверяем,
+        //является ли он параграфом. Если да, то мы конвертируем его в формат OpenXML и добавляем в Body нашего документа.
+        foreach (Wpf.Block block in document.Blocks)
+        {
+            if (block is Wpf.Paragraph paragraph)
+            {
+                body.Append(ToDocxParagraph(paragraph)); 
+            }
+        }
+        return body; 
+    }
+
+    public static Docx.Paragraph ToDocxParagraph(Wpf.Paragraph paragraph)
+    {
+        var docxParagraph = new Docx.Paragraph();
+        var props = new Docx.ParagraphProperties();
+
+        switch (paragraph.TextAlignment)
+        {
+            case TextAlignment.Left:
+                props.Append(
+                    new Docx.Justification()
+                    {
+                        Val = Docx.JustificationValues.Left
+                    });
+                break;
+
+            case TextAlignment.Center:
+                props.Append(
+                    new Docx.Justification()
+                    {
+                        Val = Docx.JustificationValues.Center
+                    });
+                break;
+
+            case TextAlignment.Right:
+                props.Append(
+                    new Docx.Justification()
+                    {
+                        Val = Docx.JustificationValues.Right
+                    });
+                break;
+
+            case TextAlignment.Justify:
+                props.Append(
+                    new Docx.Justification()
+                    {
+                        Val = Docx.JustificationValues.Both
+                    });
+                break;
+        }
+
+        docxParagraph.Append(props);
+
+        foreach (Wpf.Inline inline in paragraph.Inlines)
+        {
+            if (inline is Wpf.Run run)
+            {
+                docxParagraph.Append(ToDocxRun(run));
+            }
+        }
+        return docxParagraph;
     }
 }

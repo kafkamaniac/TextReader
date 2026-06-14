@@ -45,6 +45,18 @@
             <Button Content="S"
             Width="30"
             Click="Strike_Click"/>
+            
+            <Button Content="Лево"
+            Click="AlignLeft_Click"/>
+
+            <Button Content="Центр"
+            Click="AlignCenter_Click"/>
+
+            <Button Content="Право"
+            Click="AlignRight_Click"/>
+
+            <Button Content="По ширине"
+            Click="Justify_Click"/>
 
         </StackPanel>
 

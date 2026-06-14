@@ -93,4 +93,56 @@ public static class TextFormatService
 
         editor.Focus();
     }
+
+
+    public static void AlignLeft(RichTextBox editor)
+    {
+        ApplyAlignment(editor, TextAlignment.Left);
+    }
+
+    public static void AlignCenter(RichTextBox editor)
+    {
+        ApplyAlignment(editor, TextAlignment.Center);
+    }
+
+    public static void AlignRight(RichTextBox editor)
+    {
+        ApplyAlignment(editor, TextAlignment.Right);
+    }
+
+    public static void Justify(RichTextBox editor)
+    {
+        ApplyAlignment(editor, TextAlignment.Justify);
+    }
+
+    private static void ApplyAlignment(
+        RichTextBox editor,
+        TextAlignment alignment)
+    {
+        TextSelection selection = editor.Selection;
+
+        Paragraph? startParagraph =
+            selection.Start.Paragraph;
+
+        Paragraph? endParagraph =
+            selection.End.Paragraph;
+
+        if (startParagraph == null || endParagraph == null)
+            return;
+
+        Paragraph? current = startParagraph;
+
+        while (current != null)
+        {
+            current.TextAlignment = alignment;
+
+            if (current == endParagraph)
+                break;
+
+            current =
+                current.NextBlock as Paragraph;
+        }
+
+        editor.Focus();
+    }
 }
