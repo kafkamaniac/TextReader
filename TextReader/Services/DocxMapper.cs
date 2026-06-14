@@ -7,34 +7,21 @@ namespace TextReader.Services;
 
 public static class DocxMapper
 {
-    public static Docx.Run ToDocxRun(Wpf.Run wpfRun) //проходимся по куску текста с одинаковым форматированием
-                                                     
+    //проходимся по куску текста с одинаковым форматированием
+    public static Docx.Run ToDocxRun(Wpf.Run wpfRun)
     {
         var run = new Docx.Run();
-
         var text = new Docx.Text(wpfRun.Text ?? "")
         {
             Space = SpaceProcessingModeValues.Preserve
         };
 
-        var props = new Docx.RunProperties();
+        var props = BuildRunProperties(wpfRun);
 
-        if (wpfRun.FontWeight == FontWeights.Bold)
-            props.Append(new Docx.Bold());
-
-        if (wpfRun.FontStyle == FontStyles.Italic)
-            props.Append(new Docx.Italic());
-
-        if (wpfRun.TextDecorations == System.Windows.TextDecorations.Underline)
-            props.Append(new Docx.Underline());
-
-        if (wpfRun.TextDecorations == System.Windows.TextDecorations.Strikethrough)
-            props.Append(new Docx.Strike());
-
-        if (props.HasChildren)
+        if (props != null && props.HasChildren)
             run.Append(props);
 
-        run.Append(text);
+        run.Append(BuildText(wpfRun));
 
         return run;
     }
@@ -62,6 +49,12 @@ public static class DocxMapper
 
             if (runProps.Strike != null)
                 wpfRun.TextDecorations = TextDecorations.Strikethrough;
+
+            if (runProps.FontSize != null)
+            {
+                if (double.TryParse(runProps.FontSize.Val, out double size))
+                    wpfRun.FontSize = size / 2.0; 
+            }
         }
 
         return wpfRun;
@@ -77,10 +70,10 @@ public static class DocxMapper
         {
             if (block is Wpf.Paragraph paragraph)
             {
-                body.Append(ToDocxParagraph(paragraph)); 
+                body.Append(ToDocxParagraph(paragraph));
             }
         }
-        return body; 
+        return body;
     }
 
     public static Docx.Paragraph ToDocxParagraph(Wpf.Paragraph paragraph)
@@ -134,4 +127,62 @@ public static class DocxMapper
         }
         return docxParagraph;
     }
+
+    #region RUN
+
+    private static Docx.Text BuildText(Wpf.Run wpfRun)
+    {
+        return new Docx.Text(wpfRun.Text ?? "")
+        {
+            Space = SpaceProcessingModeValues.Preserve
+        };
+    }
+
+    private static Docx.RunProperties? BuildRunProperties(Wpf.Run wpfRun)
+    {
+        var props = new Docx.RunProperties();
+
+        ApplyFontWeight(wpfRun, props);
+        ApplyFontStyle(wpfRun, props);
+        ApplyTextDecorations(wpfRun, props);
+        ApplyFontSize(wpfRun, props);
+
+        return props;
+    }
+
+    private static void ApplyFontWeight(Wpf.Run wpfRun, Docx.RunProperties props)
+    {
+        if (wpfRun.FontWeight == FontWeights.Bold)
+            props.Append(new Docx.Bold());
+    }
+
+    private static void ApplyFontStyle(Wpf.Run wpfRun, Docx.RunProperties props)
+    {
+        if (wpfRun.FontStyle == FontStyles.Italic)
+            props.Append(new Docx.Italic());
+    }
+
+    private static void ApplyTextDecorations(Wpf.Run wpfRun, Docx.RunProperties props)
+    {
+        if (wpfRun.TextDecorations == TextDecorations.Underline)
+            props.Append(new Docx.Underline());
+
+        if (wpfRun.TextDecorations == TextDecorations.Strikethrough)
+            props.Append(new Docx.Strike());
+    }
+
+    private static void ApplyFontSize(Wpf.Run wpfRun, Docx.RunProperties props)
+    {
+        double size = wpfRun.FontSize;
+
+        if (size > 0)
+        {
+            int halfPoints = (int)(size * 2);
+            props.Append(new Docx.FontSize() { Val = halfPoints.ToString() });
+        }
+    }
+
+
+    #endregion
+
 }

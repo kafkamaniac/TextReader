@@ -151,6 +151,16 @@ public partial class MainWindow : Window
         EditorStateService.UpdateTitle(this, _state);
     }
 
+    private void FontSize_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (FontSizeBox.SelectedItem is ComboBoxItem item &&
+            double.TryParse(item.Content.ToString(), out double size))
+        {
+            Editor.Selection.ApplyPropertyValue(TextElement.FontSizeProperty, size);
+        }
+    }
+
+
     private void Window_Closing(object sender, CancelEventArgs e)
     {
         if (!EditorStateService.AskToSave(_state, GetText()))
@@ -158,6 +168,7 @@ public partial class MainWindow : Window
             e.Cancel = true;
         }
     }
+
     private string GetText()
     {
         return new TextRange(
