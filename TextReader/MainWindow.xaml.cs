@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Media;
 using TextReader.Models;
 using TextReader.Services;
 
@@ -157,6 +158,21 @@ public partial class MainWindow : Window
             double.TryParse(item.Content.ToString(), out double size))
         {
             Editor.Selection.ApplyPropertyValue(TextElement.FontSizeProperty, size);
+        }
+    }
+
+    private void FontFamily_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (FontFamilyBox.SelectedItem is ComboBoxItem item)
+        {
+            var fontName = item.Content.ToString();
+
+            if (!string.IsNullOrEmpty(fontName))
+            {
+                Editor.Selection.ApplyPropertyValue(
+                    TextElement.FontFamilyProperty,
+                    new FontFamily(fontName));
+            }
         }
     }
 

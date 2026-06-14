@@ -76,8 +76,15 @@
                 <ComboBoxItem Content="60"/>
                 <ComboBoxItem Content="80"/>
             </ComboBox>
-            
-
+            <ComboBox x:Name="FontFamilyBox"
+          Width="140"
+          SelectionChanged="FontFamily_Changed">
+                <ComboBoxItem Content="Arial"/>
+                <ComboBoxItem Content="Calibri"/>
+                <ComboBoxItem Content="Times New Roman"/>
+                <ComboBoxItem Content="Consolas"/>
+                <ComboBoxItem Content="Segoe UI"/>
+            </ComboBox>
 
         </StackPanel>
 

@@ -2,6 +2,7 @@
 using Wpf = System.Windows.Documents;
 using Docx = DocumentFormat.OpenXml.Wordprocessing;
 using DocumentFormat.OpenXml;
+using System.Windows.Media;
 
 namespace TextReader.Services;
 
@@ -54,6 +55,16 @@ public static class DocxMapper
             {
                 if (double.TryParse(runProps.FontSize.Val, out double size))
                     wpfRun.FontSize = size / 2.0; 
+            }
+
+            if (runProps.RunFonts != null)
+            {
+                var font = runProps.RunFonts.Ascii?.Value;
+
+                if (!string.IsNullOrEmpty(font))
+                {
+                    wpfRun.FontFamily = new FontFamily(font);
+                }
             }
         }
 
@@ -146,6 +157,7 @@ public static class DocxMapper
         ApplyFontStyle(wpfRun, props);
         ApplyTextDecorations(wpfRun, props);
         ApplyFontSize(wpfRun, props);
+        ApplyFontFamily(wpfRun, props);
 
         return props;
     }
@@ -179,6 +191,24 @@ public static class DocxMapper
         {
             int halfPoints = (int)(size * 2);
             props.Append(new Docx.FontSize() { Val = halfPoints.ToString() });
+        }
+    }
+
+
+    #endregion
+
+    #region FONTS STYLE
+    //ШРИИИИФТы
+
+    private static void ApplyFontFamily(Wpf.Run wpfRun, Docx.RunProperties props)
+    {
+        if (wpfRun.FontFamily != null)
+        {
+            props.Append(new Docx.RunFonts()
+            {
+                Ascii = wpfRun.FontFamily.Source,
+                HighAnsi = wpfRun.FontFamily.Source
+            });
         }
     }
 
