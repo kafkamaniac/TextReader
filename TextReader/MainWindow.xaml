@@ -4,123 +4,212 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        xmlns:local="clr-namespace:TextReader"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="800"
+        Title="TextReader"
+        Height="680" Width="960"
+        MinWidth="800" MinHeight="600"
+        Background="#1E1E2E"
         Closing="Window_Closing">
+
+    <Window.Resources>
+
+        <!-- Палитра -->
+        <SolidColorBrush x:Key="Accent" Color="#6C63FF"/>
+        <SolidColorBrush x:Key="Surface" Color="#2D2D44"/>
+        <SolidColorBrush x:Key="SurfaceDark" Color="#1E1E2E"/>
+        <SolidColorBrush x:Key="Text" Color="#F0F0FF"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#A0A0C0"/>
+
+        <!-- Кнопка -->
+        <Style TargetType="Button" x:Key="ToolButton">
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#2A2A4A"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#6C63FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
 
     <DockPanel>
 
-        <Menu DockPanel.Dock="Top">
+        <!-- MENU -->
+        <Menu DockPanel.Dock="Top"
+              Background="White"
+              Foreground="Black">
+
             <MenuItem Header="Файл">
-
-                <MenuItem Header="Создать"
-                          Click="New_Click"/>
-
-                <MenuItem Header="Открыть"
-                          Click="Open_Click"/>
-
-                <MenuItem Header="Сохранить"
-                          Click="Save_Click"/>
-
+                <MenuItem Header="Создать" Click="New_Click"/>
+                <MenuItem Header="Открыть" Click="Open_Click"/>
+                <MenuItem Header="Сохранить" Click="Save_Click"/>
             </MenuItem>
+
         </Menu>
-        <StackPanel Orientation="Horizontal"
-            DockPanel.Dock="Top"
-            Background="LightGray">
 
-            <Button Content="B"
-            FontWeight="Bold"
-            Width="30"
-            Click="Bold_Click"/>
+        <!-- TOOLBAR -->
+        <Border DockPanel.Dock="Top"
+                Background="#1A2D2D44"
+                Padding="10"
+                BorderBrush="#3D3D5C"
+                BorderThickness="0,0,0,1">
 
-            <Button Content="I"
-            FontStyle="Italic"
-            Width="30"
-            Click="Italic_Click"/>
+            <StackPanel Orientation="Horizontal">
 
-            <Button Content="U"
-            Width="30"
-            Click="Underline_Click"/>
+                <!-- Formatting -->
+                <Border Background="{StaticResource Surface}"
+                        CornerRadius="8"
+                        Padding="4"
+                        Margin="0,0,10,0">
 
-            <Button Content="S"
-            Width="30"
-            Click="Strike_Click"/>
+                    <StackPanel Orientation="Horizontal">
 
-            <Button Width="30"
-        Click="AlignLeft_Click"
-        ToolTip="По левому краю">
-                <StackPanel>
-                    <Rectangle Height="2" Width="16" Fill="Black"/>
-                    <Rectangle Height="2" Width="12" Fill="Black" Margin="0,2,4,0"/>
-                    <Rectangle Height="2" Width="10" Fill="Black" Margin="0,2,6,0"/>
-                    <Rectangle Height="2" Width="8" Fill="Black" Margin="0,2,8,0"/>
-                </StackPanel>
-            </Button>
+                        <Button Content="B" FontWeight="Bold"
+                                Style="{StaticResource ToolButton}"
+                                Click="Bold_Click"/>
 
-            <Button Width="30"
-        Click="AlignCenter_Click">
-                <StackPanel HorizontalAlignment="Center">
-                    <Rectangle Height="2" Width="16" Fill="Black"/>
-                    <Rectangle Height="2" Width="10" Fill="Black" Margin="0,2,0,0"/>
-                    <Rectangle Height="2" Width="16" Fill="Black" Margin="0,2,0,0"/>
-                    <Rectangle Height="2" Width="10" Fill="Black" Margin="0,2,0,0"/>
-                </StackPanel>
-            </Button>
+                        <Button Content="I" FontStyle="Italic"
+                                Style="{StaticResource ToolButton}"
+                                Click="Italic_Click"/>
 
-            <Button Width="30"
-                    
-        Click="AlignRight_Click"
-        ToolTip="По правому краю">
-                <StackPanel HorizontalAlignment="Right">
-                    <Rectangle Height="2" Width="16" Fill="Black"/>
-                    <Rectangle Height="2" Width="12" Fill="Black" Margin="4,2,0,0"/>
-                    <Rectangle Height="2" Width="10" Fill="Black" Margin="6,2,0,0"/>
-                    <Rectangle Height="2" Width="8" Fill="Black" Margin="8,2,0,0"/>
-                </StackPanel>
-            </Button>
+                        <Button Content="U"
+                                Style="{StaticResource ToolButton}"
+                                Click="Underline_Click"/>
 
-            <Button Width="30"
-        Click="Justify_Click"
-        ToolTip="По ширине">
-                <StackPanel>
-                    <Rectangle Height="2" Width="16" Fill="Black"/>
-                    <Rectangle Height="2" Width="16" Fill="Black" Margin="0,2,0,0"/>
-                    <Rectangle Height="2" Width="16" Fill="Black" Margin="0,2,0,0"/>
-                    <Rectangle Height="2" Width="16" Fill="Black" Margin="0,2,0,0"/>
-                </StackPanel>
-            </Button>
+                        <Button Content="S"
+                                Style="{StaticResource ToolButton}"
+                                Click="Strike_Click"/>
 
-            <TextBlock Text="Размер:"
-                       VerticalAlignment="Center"
-                       Margin="5,0"/>
-            <ComboBox x:Name="FontSizeBox"
-                      Width="60"
-                      IsEditable="True"
-                      SelectionChanged="FontSize_Changed"
-                      LostFocus="FontSize_LostFocus"
-                      KeyDown="FontSize_KeyDown"/>
+                    </StackPanel>
+                </Border>
 
-            <TextBlock Text="Шрифт:"
-                       VerticalAlignment="Center"
-                       Margin="5,0"/>
-            <ComboBox x:Name="FontFamilyBox"
-                      Width="200"
-                      SelectionChanged="FontFamily_Changed"/>
+                <!-- Alignment -->
+                <Border Background="{StaticResource Surface}"
+        CornerRadius="8"
+        Padding="4"
+        Margin="0,0,10,0">
 
-            <TextBlock Text="Цвет:"
-                       VerticalAlignment="Center"
-                       Margin="5,0"/>
-            <xctk:ColorPicker x:Name="ColorPickerBox"
-                  Width="120"
-                  SelectedColorChanged="ColorPicker_Changed"/>
+                    <StackPanel Orientation="Horizontal">
 
-        </StackPanel>
+                        <Button Style="{StaticResource ToolButton}"
+                Click="AlignLeft_Click"
+                ToolTip="Left">
+                            <Path Data="M4,5 L16,5 M4,9 L12,9 M4,13 L14,13"
+                  Stroke="{StaticResource Text}"
+                  StrokeThickness="1.5"
+                  Stretch="Uniform"
+                  Width="16" Height="16"/>
+                        </Button>
 
+                        <Button Style="{StaticResource ToolButton}"
+                Click="AlignCenter_Click"
+                ToolTip="Center">
+                            <Path Data="M4,5 L16,5 M6,9 L14,9 M5,13 L15,13"
+                  Stroke="{StaticResource Text}"
+                  StrokeThickness="1.5"
+                  Stretch="Uniform"
+                  Width="16" Height="16"/>
+                        </Button>
+
+                        <Button Style="{StaticResource ToolButton}"
+                Click="AlignRight_Click"
+                ToolTip="Right">
+                            <Path Data="M4,5 L16,5 M8,9 L16,9 M6,13 L16,13"
+                  Stroke="{StaticResource Text}"
+                  StrokeThickness="1.5"
+                  Stretch="Uniform"
+                  Width="16" Height="16"/>
+                        </Button>
+
+                        <Button Style="{StaticResource ToolButton}"
+                Click="Justify_Click"
+                ToolTip="Justify">
+                            <Path Data="M4,5 L16,5 M4,9 L16,9 M4,13 L16,13"
+                  Stroke="{StaticResource Text}"
+                  StrokeThickness="1.5"
+                  Stretch="Uniform"
+                  Width="16" Height="16"/>
+                        </Button>
+
+                    </StackPanel>
+                </Border>
+
+                <!-- FONT SIZE -->
+                <TextBlock Text="Size"
+                           Foreground="{StaticResource TextSecondary}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,5,0"/>
+
+                <ComboBox x:Name="FontSizeBox"
+                          Width="70"
+                          IsEditable="True"
+                          Margin="0,0,10,0"
+                          SelectionChanged="FontSize_Changed"/>
+
+                <!-- FONT -->
+                <TextBlock Text="Font"
+                           Foreground="{StaticResource TextSecondary}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,5,0"/>
+
+                <ComboBox x:Name="FontFamilyBox"
+                          Width="160"
+                          Margin="0,0,10,0"
+                          SelectionChanged="FontFamily_Changed"/>
+
+                <!-- COLOR -->
+                <TextBlock Text="Color"
+                           Foreground="{StaticResource TextSecondary}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,5,0"/>
+
+                <xctk:ColorPicker x:Name="ColorPickerBox"
+                                  Width="120"
+                                  SelectedColorChanged="ColorPicker_Changed"/>
+
+            </StackPanel>
+        </Border>
+
+        <!-- EDITOR -->
         <RichTextBox x:Name="Editor"
-             Padding="10"
-             VerticalScrollBarVisibility="Auto"
-             HorizontalScrollBarVisibility="Auto"/>
+                     Margin="4"
+                     Padding="12"
+                     Background="{StaticResource SurfaceDark}"
+                     Foreground="{StaticResource Text}"
+                     BorderBrush="#3D3D5C"
+                     BorderThickness="1"
+                     AcceptsReturn="True"
+                     AcceptsTab="True"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
+                     SpellCheck.IsEnabled="True">
+
+            <FlowDocument FontSize="15"
+                          FontFamily="Segoe UI"/>
+
+        </RichTextBox>
 
     </DockPanel>
 </Window>
