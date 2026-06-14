@@ -1,6 +1,8 @@
 ﻿using Microsoft.Win32;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using TextReader.Models;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -19,12 +21,12 @@ public static class EditorStateService
             : fileName;
     }
 
-    public static bool AskToSave(EditorState state, string text)
+    public static bool AskToSave(EditorState state, RichTextBox editor)
     {
         if (!state.IsModified)
             return true;
 
-        MessageBoxResult result = MessageBox.Show(
+        var result = MessageBox.Show(
             "Сохранить изменения?",
             "TextReader",
             MessageBoxButton.YesNoCancel,
@@ -34,37 +36,22 @@ public static class EditorStateService
         {
             case MessageBoxResult.Yes:
 
-                string? path;
-
-
                 if (state.CurrentFilePath != null)
                 {
-                    SaveCurrentFile(state, text);
-                    return true;
+                    return SaveCurrentFile(state, editor);
                 }
 
-                SaveFileDialog dialog = new();
-                dialog.Filter = "Текстовые файлы (*.txt)|*.txt|Документы Word (*.docx)|*.docx|Все файлы (*.*)|*.*";
+                var dialog = new SaveFileDialog
+                {
+                    Filter = "Text (*.txt)|*.txt|Word (*.docx)|*.docx"
+                };
+
                 if (dialog.ShowDialog() != true)
                     return false;
 
-                path = dialog.FileName;
-                string newExt = Path.GetExtension(path).ToLower();
+                state.CurrentFilePath = dialog.FileName;
 
-                if (newExt == ".docx")
-                {
-                    FileService.SaveDocx(path, text);
-                }
-                else if (newExt == ".txt")
-                {
-                    FileService.SaveText(path, text);
-                }
-                else
-                {
-                    MessageBox.Show("Неподдерживаемый формат файла.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return false;
-                }
-                return true;
+                return SaveCurrentFile(state, editor);
 
             case MessageBoxResult.No:
                 return true;
@@ -74,7 +61,7 @@ public static class EditorStateService
         }
     }
 
-    private static bool SaveCurrentFile(EditorState state, string text)
+    private static bool SaveCurrentFile(EditorState state, RichTextBox editor)
     {
         if (state.CurrentFilePath == null)
             return false;
@@ -83,10 +70,14 @@ public static class EditorStateService
 
         if (ext == ".docx")
         {
-            FileService.SaveDocx(state.CurrentFilePath, text);
+            FileService.SaveDocxFromRichTextBox(state.CurrentFilePath, editor);
         }
         else if (ext == ".txt")
         {
+            string text = new TextRange(
+                editor.Document.ContentStart,
+                editor.Document.ContentEnd).Text;
+
             FileService.SaveText(state.CurrentFilePath, text);
         }
         else

@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 using TextReader.Models;
 using TextReader.Services;
@@ -17,11 +18,14 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         Editor.TextChanged += Editor_TextChanged;
+
+        LoadFonts();
+        LoadFontSizes();
     }
 
     private void New_Click(object sender, RoutedEventArgs e)
     {
-        if (!EditorStateService.AskToSave(_state, GetText()))
+        if (!EditorStateService.AskToSave(_state, Editor))
             return;
 
         Editor.Document = new FlowDocument();
@@ -35,7 +39,7 @@ public partial class MainWindow : Window
     private void Open_Click(object sender, RoutedEventArgs e)
     {
 
-        if (!EditorStateService.AskToSave(_state, GetText()))
+        if (!EditorStateService.AskToSave(_state, Editor))
             return;
 
         OpenFileDialog dialog = new OpenFileDialog();
@@ -152,34 +156,63 @@ public partial class MainWindow : Window
         EditorStateService.UpdateTitle(this, _state);
     }
 
+    #region FONTS 
+    //FONTS
     private void FontSize_Changed(object sender, SelectionChangedEventArgs e)
     {
-        if (FontSizeBox.SelectedItem is ComboBoxItem item &&
-            double.TryParse(item.Content.ToString(), out double size))
+        ApplyFontSize();
+    }
+    private void FontSize_LostFocus(object sender, RoutedEventArgs e)
+    {
+        ApplyFontSize();
+    }
+    private void FontSize_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+            ApplyFontSize();
+    }
+
+    private void ApplyFontSize()
+    {
+        if (double.TryParse(FontSizeBox.Text, out double size) && size > 0)
         {
-            Editor.Selection.ApplyPropertyValue(TextElement.FontSizeProperty, size);
+            Editor.Selection.ApplyPropertyValue(
+                TextElement.FontSizeProperty,
+                size);
+        }
+    }
+    private void LoadFontSizes()
+    {
+        int[] sizes = { 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72 };
+
+        foreach (var size in sizes)
+        {
+            FontSizeBox.Items.Add(size.ToString());
         }
     }
 
     private void FontFamily_Changed(object sender, SelectionChangedEventArgs e)
     {
-        if (FontFamilyBox.SelectedItem is ComboBoxItem item)
+        if (FontFamilyBox.SelectedItem is string fontName)
         {
-            var fontName = item.Content.ToString();
-
-            if (!string.IsNullOrEmpty(fontName))
-            {
-                Editor.Selection.ApplyPropertyValue(
-                    TextElement.FontFamilyProperty,
-                    new FontFamily(fontName));
-            }
+            Editor.Selection.ApplyPropertyValue(
+                TextElement.FontFamilyProperty,
+                new FontFamily(fontName));
         }
     }
 
+    private void LoadFonts()
+    {
+        foreach (var font in Fonts.SystemFontFamilies)
+        {
+            FontFamilyBox.Items.Add(font.Source);
+        }
+    }
 
+    #endregion
     private void Window_Closing(object sender, CancelEventArgs e)
     {
-        if (!EditorStateService.AskToSave(_state, GetText()))
+        if (!EditorStateService.AskToSave(_state, Editor))
         {
             e.Cancel = true;
         }
