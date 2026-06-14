@@ -46,34 +46,71 @@
             <Button Content="S"
             Width="30"
             Click="Strike_Click"/>
-            
-            <Button Content="Лево"
-            Width ="70"
-            Click="AlignLeft_Click"/>
 
-            <Button Content="Центр"
-            Width ="70"
-            Click="AlignCenter_Click"/>
+            <Button Width="30"
+        Click="AlignLeft_Click"
+        ToolTip="По левому краю">
+                <StackPanel>
+                    <Rectangle Height="2" Width="16" Fill="Black"/>
+                    <Rectangle Height="2" Width="12" Fill="Black" Margin="0,2,4,0"/>
+                    <Rectangle Height="2" Width="10" Fill="Black" Margin="0,2,6,0"/>
+                    <Rectangle Height="2" Width="8" Fill="Black" Margin="0,2,8,0"/>
+                </StackPanel>
+            </Button>
 
-            <Button Content="Право"
-            Width ="70"
-            Click="AlignRight_Click"/>
+            <Button Width="30"
+        Click="AlignCenter_Click">
+                <StackPanel HorizontalAlignment="Center">
+                    <Rectangle Height="2" Width="16" Fill="Black"/>
+                    <Rectangle Height="2" Width="10" Fill="Black" Margin="0,2,0,0"/>
+                    <Rectangle Height="2" Width="16" Fill="Black" Margin="0,2,0,0"/>
+                    <Rectangle Height="2" Width="10" Fill="Black" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Button>
 
-            <Button Content="По ширине"
-            Width ="70" 
-            Click="Justify_Click"/>
+            <Button Width="30"
+                    
+        Click="AlignRight_Click"
+        ToolTip="По правому краю">
+                <StackPanel HorizontalAlignment="Right">
+                    <Rectangle Height="2" Width="16" Fill="Black"/>
+                    <Rectangle Height="2" Width="12" Fill="Black" Margin="4,2,0,0"/>
+                    <Rectangle Height="2" Width="10" Fill="Black" Margin="6,2,0,0"/>
+                    <Rectangle Height="2" Width="8" Fill="Black" Margin="8,2,0,0"/>
+                </StackPanel>
+            </Button>
 
+            <Button Width="30"
+        Click="Justify_Click"
+        ToolTip="По ширине">
+                <StackPanel>
+                    <Rectangle Height="2" Width="16" Fill="Black"/>
+                    <Rectangle Height="2" Width="16" Fill="Black" Margin="0,2,0,0"/>
+                    <Rectangle Height="2" Width="16" Fill="Black" Margin="0,2,0,0"/>
+                    <Rectangle Height="2" Width="16" Fill="Black" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Button>
+
+            <TextBlock Text="Размер:"
+                       VerticalAlignment="Center"
+                       Margin="5,0"/>
             <ComboBox x:Name="FontSizeBox"
                       Width="60"
                       IsEditable="True"
                       SelectionChanged="FontSize_Changed"
                       LostFocus="FontSize_LostFocus"
                       KeyDown="FontSize_KeyDown"/>
-            
+
+            <TextBlock Text="Шрифт:"
+                       VerticalAlignment="Center"
+                       Margin="5,0"/>
             <ComboBox x:Name="FontFamilyBox"
                       Width="200"
                       SelectionChanged="FontFamily_Changed"/>
 
+            <TextBlock Text="Цвет:"
+                       VerticalAlignment="Center"
+                       Margin="5,0"/>
             <xctk:ColorPicker x:Name="ColorPickerBox"
                   Width="120"
                   SelectedColorChanged="ColorPicker_Changed"/>

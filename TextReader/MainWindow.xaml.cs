@@ -216,10 +216,12 @@ public partial class MainWindow : Window
 
     private void LoadFonts()
     {
+
         foreach (var font in Fonts.SystemFontFamilies)
         {
             FontFamilyBox.Items.Add(font.Source);
         }
+        FontFamilyBox.SelectedIndex = 0;
     }
 
     #endregion
