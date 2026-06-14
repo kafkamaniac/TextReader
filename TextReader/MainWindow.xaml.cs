@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using TextReader.Models;
 using TextReader.Services;
+using WinColor = System.Drawing.Color;
 
 namespace TextReader;
 
@@ -200,6 +201,18 @@ public partial class MainWindow : Window
                 new FontFamily(fontName));
         }
     }
+    private void ColorPicker_Changed(
+    object sender,
+    RoutedPropertyChangedEventArgs<Color?> e)
+    {
+        if (e.NewValue.HasValue)
+        {
+            Editor.Selection.ApplyPropertyValue(
+                TextElement.ForegroundProperty,
+                new SolidColorBrush(e.NewValue.Value));
+        }
+    }
+
 
     private void LoadFonts()
     {

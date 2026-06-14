@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:TextReader"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800"
@@ -47,15 +48,19 @@
             Click="Strike_Click"/>
             
             <Button Content="Лево"
+            Width ="70"
             Click="AlignLeft_Click"/>
 
             <Button Content="Центр"
+            Width ="70"
             Click="AlignCenter_Click"/>
 
             <Button Content="Право"
+            Width ="70"
             Click="AlignRight_Click"/>
 
             <Button Content="По ширине"
+            Width ="70" 
             Click="Justify_Click"/>
 
             <ComboBox x:Name="FontSizeBox"
@@ -68,6 +73,10 @@
             <ComboBox x:Name="FontFamilyBox"
                       Width="200"
                       SelectionChanged="FontFamily_Changed"/>
+
+            <xctk:ColorPicker x:Name="ColorPickerBox"
+                  Width="120"
+                  SelectedColorChanged="ColorPicker_Changed"/>
 
         </StackPanel>
 

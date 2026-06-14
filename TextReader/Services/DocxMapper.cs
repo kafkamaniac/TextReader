@@ -56,6 +56,19 @@ public static class DocxMapper
                 if (double.TryParse(runProps.FontSize.Val, out double size))
                     wpfRun.FontSize = size / 2.0; 
             }
+            if (runProps.Color != null)
+            {
+                string? hex = runProps.Color.Val?.Value;
+
+                if (!string.IsNullOrEmpty(hex))
+                {
+                    var color =
+                        (Color)ColorConverter.ConvertFromString("#" + hex);
+
+                    wpfRun.Foreground =
+                        new SolidColorBrush(color);
+                }
+            }
 
             if (runProps.RunFonts != null)
             {
@@ -158,6 +171,7 @@ public static class DocxMapper
         ApplyTextDecorations(wpfRun, props);
         ApplyFontSize(wpfRun, props);
         ApplyFontFamily(wpfRun, props);
+        ApplyFontColor(wpfRun, props);
 
         return props;
     }
@@ -212,6 +226,21 @@ public static class DocxMapper
         }
     }
 
+    private static void ApplyFontColor(
+    Wpf.Run wpfRun,
+    Docx.RunProperties props)
+    {
+        if (wpfRun.Foreground is SolidColorBrush brush)
+        {
+            string hex = brush.Color.ToString().Replace("#", "");
+
+            props.Append(
+                new Docx.Color()
+                {
+                    Val = hex
+                });
+        }
+    }
 
     #endregion
 
