@@ -31,6 +31,7 @@ public partial class MainWindow : Window
 
         LoadFonts();
         LoadFontSizes();
+        UpdateModeButton();
     }
 
     private void New_Click(object sender, RoutedEventArgs e)
@@ -316,8 +317,30 @@ public partial class MainWindow : Window
 
     private void ExitReadingMode()
     {
-        Editor.Visibility = Visibility.Visible;
         Reader.Visibility = Visibility.Collapsed;
+        Editor.Visibility = Visibility.Visible;
+    }
+
+    private void ModeButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isReadingMode)
+        {
+            ExitReadingMode();
+        }
+        else
+        {
+            SwitchToReader(FlowDocumentReaderViewingMode.Page);
+        }
+
+        _isReadingMode = !_isReadingMode;
+        UpdateModeButton();
+    }
+
+    private void UpdateModeButton()
+    {
+        ModeButton.Content = _isReadingMode
+            ? "Редактировать"
+            : "Режим чтения";
     }
 
     #endregion

@@ -43,7 +43,7 @@
                         Margin="10"
                         Visibility="Collapsed">
 
-                <TextBlock Text="Режим чтения."/>
+                <TextBlock Text="Режим чтения"/>
                 
                 <ComboBox x:Name="ReadingModeBox">
                     <ComboBoxItem Content="Страницы"/>

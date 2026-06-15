@@ -119,10 +119,10 @@
             <xctk:ColorPicker x:Name="ColorPickerBox"
                   Width="120"
                   SelectedColorChanged="ColorPicker_Changed"/>
-            
-            <Button Content="Редактировать"
-                    Width="120"
-                    Click="ExitReadingMode_Click"/>
+
+            <Button x:Name="ModeButton"
+                    Content="Режим чтения"
+                    Click="ModeButton_Click"/>
 
         </StackPanel>
 
