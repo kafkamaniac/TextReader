@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.Data.Sqlite;
+using Microsoft.Win32;
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
@@ -165,6 +166,36 @@ public partial class MainWindow : Window
         _state.IsModified = true;
 
         EditorStateService.UpdateTitle(this, _state);
+    }
+
+    private DictionaryService _dict = new DictionaryService();
+
+    private void Translate_Click(object sender, RoutedEventArgs e)
+    {
+        using var conn = new SqliteConnection("Data Source=dict.db");
+        conn.Open();
+
+        var word = InputTextBox.Text.Trim().ToLower();
+
+        var cmd = conn.CreateCommand();
+        cmd.CommandText =
+            "SELECT translation FROM dictionary WHERE word = $word";
+
+        cmd.Parameters.AddWithValue("$word", word);
+
+        using var reader = cmd.ExecuteReader();
+
+        List<string> translations = new();
+
+        while (reader.Read())
+        {
+            translations.Add(reader.GetString(0));
+        }
+
+        ResultTextBlock.Text =
+            translations.Count > 0
+            ? string.Join("; ", translations.Distinct())
+            : "Не найдено";
     }
 
     #region FONTS 

@@ -125,7 +125,22 @@
                     Click="ModeButton_Click"/>
 
         </StackPanel>
+        
+        <StackPanel Margin="20">
 
+            <TextBox x:Name="InputTextBox"
+             Width="200"
+             Margin="0,0,0,10"/>
+
+            <Button Content="Перевести"
+            Width="200"
+            Click="Translate_Click"/>
+
+            <TextBlock x:Name="ResultTextBlock"
+               Margin="0,10,0,0"
+               FontSize="16"/>
+        </StackPanel>
+        
         <RichTextBox x:Name="Editor"
              Background="{DynamicResource EditorBackground}"
              Foreground="{DynamicResource EditorForeground}"
