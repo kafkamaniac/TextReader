@@ -135,7 +135,20 @@
                      VerticalScrollBarVisibility="Auto"
                      HorizontalScrollBarVisibility="Auto"/>
         
+        <Popup x:Name="TranslatePopup"
+                           Placement="Mouse"
+                           StaysOpen="False">
 
+            <Border Background="Black"
+                        Padding="10"
+                        CornerRadius="6">
+
+                <TextBlock x:Name="PopupText"
+                               Foreground="White"
+                               FontSize="14"/>
+            </Border>
+
+        </Popup>
 
         <FlowDocumentReader x:Name="Reader"
                         Visibility="Collapsed"
@@ -143,7 +156,6 @@
                         Background="{DynamicResource EditorBackground}"
                         Foreground="{DynamicResource EditorForeground}"/>
 
-         
     </DockPanel>
     
 </Window>

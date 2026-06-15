@@ -28,10 +28,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Reader.Loaded += Reader_Loaded;
         Editor.TextChanged += Editor_TextChanged;
         Editor.SelectionChanged += Editor_SelectionChanged;
-
 
         LoadFonts();
         LoadFontSizes();
@@ -373,44 +371,5 @@ public partial class MainWindow : Window
     }
 
     #endregion
-
-    private RichTextBox? _readerTextBox;
-
-    private void Reader_Loaded(object sender, RoutedEventArgs e)
-    {
-        _readerTextBox = FindVisualChild<RichTextBox>(Reader);
-
-        if (_readerTextBox != null)
-        {
-            _readerTextBox.SelectionChanged += ReaderSelectionChanged;
-        }
-    }
-
-    private void ReaderSelectionChanged(object? sender, RoutedEventArgs e)
-    {
-        string selectedText = _readerTextBox?.Selection.Text ?? "";
-
-        if (string.IsNullOrWhiteSpace(selectedText))
-        {
-            TranslatePopup.IsOpen = false;
-            return;
-        }
-
-        selectedText = selectedText.Trim().ToLower();
-
-        string translation =
-            DictionaryService.GetTranslation(selectedText);
-
-        if (!string.IsNullOrWhiteSpace(translation))
-        {
-            PopupText.Text = translation;
-            TranslatePopup.IsOpen = true;
-        }
-        else
-        {
-            TranslatePopup.IsOpen = false;
-        }
-    }
-
 
 }
