@@ -30,6 +30,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         Editor.TextChanged += Editor_TextChanged;
         Editor.SelectionChanged += Editor_SelectionChanged;
+        Reader.PreviewMouseUp += Reader_PreviewMouseUp;
 
         LoadFonts();
         LoadFontSizes();
@@ -194,6 +195,9 @@ public partial class MainWindow : Window
         }
     }
 
+
+
+
     #region FONTS 
     //FONTS
     private void FontSize_Changed(object sender, SelectionChangedEventArgs e)
@@ -317,8 +321,7 @@ public partial class MainWindow : Window
 
     private void SwitchToReader(FlowDocumentReaderViewingMode mode)
     {
-        Reader.Document = CloneFlowDocument(Editor.Document); 
-
+        Reader.Document = CloneFlowDocument(Editor.Document);
         Reader.ViewingMode = mode;
 
         Editor.Visibility = Visibility.Collapsed;
@@ -370,6 +373,33 @@ public partial class MainWindow : Window
             : "Режим чтения";
     }
 
+    private void Reader_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+    {
+        var selection = Reader.Selection;
+
+        if (selection == null)
+            return;
+
+        string selectedText = selection.Text?.Trim();
+
+        if (string.IsNullOrWhiteSpace(selectedText))
+        {
+            TranslatePopup.IsOpen = false;
+            return;
+        }
+
+        selectedText = selectedText.ToLower();
+
+        string translation = DictionaryService.GetTranslation(selectedText);
+
+        if (!string.IsNullOrWhiteSpace(translation))
+        {
+            PopupText.Text = translation;
+            TranslatePopup.IsOpen = true;
+        }
+    }
+
     #endregion
+
 
 }
