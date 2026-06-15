@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using TextReader.Models;
 using TextReader.Services;
@@ -15,6 +16,14 @@ namespace TextReader;
 public partial class MainWindow : Window
 {
     private readonly EditorState _state = new();
+    private bool _isReadingMode = false;
+    public enum AppMode
+    {
+        Edit,
+        ReadPages,
+        ReadBook,
+        ReadScroll
+    }
     public MainWindow()
     {
         InitializeComponent();
@@ -233,6 +242,16 @@ public partial class MainWindow : Window
         }
     }
 
+    private void Settings_Click(object sender, RoutedEventArgs e)
+    {
+        SettingsWindow settings = new SettingsWindow();
+
+        if (settings.ShowDialog() == true)
+        {
+            SetMode(settings.SelectedMode);
+        }
+    }
+
     private string GetText()
     {
         return new TextRange(
@@ -240,4 +259,67 @@ public partial class MainWindow : Window
             Editor.Document.ContentEnd
         ).Text;
     }
+
+
+    #region ReadingMode
+
+
+    private void SetMode(AppMode mode)
+    {
+        switch (mode)
+        {
+            case AppMode.Edit:
+                Reader.Visibility = Visibility.Collapsed;
+                Editor.Visibility = Visibility.Visible;
+                break;
+
+            case AppMode.ReadPages:
+                SwitchToReader(FlowDocumentReaderViewingMode.Page);
+                break;
+
+            case AppMode.ReadBook:
+                SwitchToReader(FlowDocumentReaderViewingMode.TwoPage);
+                break;
+
+            case AppMode.ReadScroll:
+                SwitchToReader(FlowDocumentReaderViewingMode.Scroll);
+                break;
+        }
+    }
+
+    private void SwitchToReader(FlowDocumentReaderViewingMode mode)
+    {
+        Reader.Document = CloneFlowDocument(Editor.Document); 
+
+        Reader.ViewingMode = mode;
+
+        Editor.Visibility = Visibility.Collapsed;
+        Reader.Visibility = Visibility.Visible;
+    }
+
+    private FlowDocument? CloneFlowDocument(FlowDocument original)
+    {
+        if (original == null) return null;
+
+        string xaml = XamlWriter.Save(original);
+
+        using var stringReader = new StringReader(xaml);
+        using var xmlReader = System.Xml.XmlReader.Create(stringReader);
+
+        return (FlowDocument)XamlReader.Load(xmlReader);
+    }
+
+    private void ExitReadingMode_Click(object sender, RoutedEventArgs e)
+    {
+        ExitReadingMode();
+    }
+
+    private void ExitReadingMode()
+    {
+        Editor.Visibility = Visibility.Visible;
+        Reader.Visibility = Visibility.Collapsed;
+    }
+
+    #endregion
+
 }

@@ -4,6 +4,15 @@
              xmlns:local="clr-namespace:TextReader"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+
+        <SolidColorBrush x:Key="WindowBackground"
+                     Color="White"/>
+
+        <SolidColorBrush x:Key="EditorBackground"
+                     Color="White"/>
+
+        <SolidColorBrush x:Key="EditorForeground"
+                     Color="Black"/>
+
     </Application.Resources>
 </Application>

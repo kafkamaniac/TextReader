@@ -1,0 +1,62 @@
+﻿<Window x:Class="TextReader.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Настройки"
+        Height="350"
+        Width="600">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <ListBox x:Name="CategoryList"
+                 SelectionChanged="CategoryList_SelectionChanged">
+
+            <ListBoxItem Content="Оформление"
+                         IsSelected="True"/>
+
+            <ListBoxItem Content="Режим чтения"/>
+
+        </ListBox>
+
+        <Grid Grid.Column="1">
+
+            <StackPanel x:Name="AppearancePanel"
+                        Margin="10">
+
+                <TextBlock Text="Тема оформления"/>
+
+                <ComboBox x:Name="ThemeBox">
+                    <ComboBoxItem Content="Светлая"/>
+                    <ComboBoxItem Content="Тёмная"/>
+                    <ComboBoxItem Content="Сепия"/>
+                </ComboBox>
+
+                <Button Content="Применить"
+                        Margin="0,10,0,0"
+                        Click="Apply_Click"/>
+            </StackPanel>
+
+            <StackPanel x:Name="ReadingPanel"
+                        Margin="10"
+                        Visibility="Collapsed">
+
+                <TextBlock Text="Режим чтения."/>
+                
+                <ComboBox x:Name="ReadingModeBox">
+                    <ComboBoxItem Content="Страницы"/>
+                    <ComboBoxItem Content="Книга"/>
+                    <ComboBoxItem Content="Прокрутка"/>
+                </ComboBox>
+
+                <Button Content="Применить" Click="ApplyReading_Click"/>
+
+            </StackPanel>
+
+        </Grid>
+
+    </Grid>
+
+</Window>

@@ -7,7 +7,8 @@
         xmlns:local="clr-namespace:TextReader"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800"
-        Closing="Window_Closing">
+        Closing="Window_Closing"
+        Background="{DynamicResource WindowBackground}">
 
     <DockPanel>
 
@@ -15,16 +16,20 @@
             <MenuItem Header="Файл">
 
                 <MenuItem Header="Создать"
-                          Click="New_Click"/>
+                  Click="New_Click"/>
 
                 <MenuItem Header="Открыть"
-                          Click="Open_Click"/>
+                  Click="Open_Click"/>
 
                 <MenuItem Header="Сохранить"
-                          Click="Save_Click"/>
+                  Click="Save_Click"/>
 
             </MenuItem>
+
+            <MenuItem Header="Настройки"
+              Click="Settings_Click"/>
         </Menu>
+        
         <StackPanel Orientation="Horizontal"
             DockPanel.Dock="Top"
             Background="LightGray">
@@ -114,13 +119,29 @@
             <xctk:ColorPicker x:Name="ColorPickerBox"
                   Width="120"
                   SelectedColorChanged="ColorPicker_Changed"/>
+            
+            <Button Content="Редактировать"
+                    Width="120"
+                    Click="ExitReadingMode_Click"/>
 
         </StackPanel>
 
         <RichTextBox x:Name="Editor"
+             Background="{DynamicResource EditorBackground}"
+             Foreground="{DynamicResource EditorForeground}"
              Padding="10"
+             Visibility="Visible"
              VerticalScrollBarVisibility="Auto"
              HorizontalScrollBarVisibility="Auto"/>
 
+        <FlowDocumentReader x:Name="Reader"
+                        Visibility="Collapsed"
+                        ViewingMode="Page"
+                        Background="{DynamicResource EditorBackground}"
+                        Foreground="{DynamicResource EditorForeground}"/>
+
     </DockPanel>
+    
 </Window>
+
+    
