@@ -29,6 +29,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         Editor.TextChanged += Editor_TextChanged;
+        Editor.SelectionChanged += Editor_SelectionChanged;
 
         LoadFonts();
         LoadFontSizes();
@@ -168,34 +169,29 @@ public partial class MainWindow : Window
         EditorStateService.UpdateTitle(this, _state);
     }
 
-    private DictionaryService _dict = new DictionaryService();
-
-    private void Translate_Click(object sender, RoutedEventArgs e)
+    private void Editor_SelectionChanged(object sender, RoutedEventArgs e)
     {
-        using var conn = new SqliteConnection("Data Source=dict.db");
-        conn.Open();
+        string selectedText = Editor.Selection.Text;
 
-        var word = InputTextBox.Text.Trim().ToLower();
-
-        var cmd = conn.CreateCommand();
-        cmd.CommandText =
-            "SELECT translation FROM dictionary WHERE word = $word";
-
-        cmd.Parameters.AddWithValue("$word", word);
-
-        using var reader = cmd.ExecuteReader();
-
-        List<string> translations = new();
-
-        while (reader.Read())
+        if (string.IsNullOrWhiteSpace(selectedText))
         {
-            translations.Add(reader.GetString(0));
+            TranslatePopup.IsOpen = false;
+            return;
         }
 
-        ResultTextBlock.Text =
-            translations.Count > 0
-            ? string.Join("; ", translations.Distinct())
-            : "Не найдено";
+        var word = selectedText.Trim().ToLower();
+
+        string translation = DictionaryService.GetTranslation(word);
+
+        if (!string.IsNullOrWhiteSpace(translation))
+        {
+            PopupText.Text = translation;
+            TranslatePopup.IsOpen = true;
+        }
+        else
+        {
+            TranslatePopup.IsOpen = false;
+        }
     }
 
     #region FONTS 

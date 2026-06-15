@@ -20,4 +20,20 @@ public class DictionaryService
 
         return cmd.ExecuteScalar()?.ToString() ?? "Не найдено";
     }
+
+    public static string GetTranslation(string word)
+    {
+        using var conn = new SqliteConnection("Data Source=dict.db");
+        conn.Open();
+
+        var cmd = conn.CreateCommand();
+        cmd.CommandText =
+            "SELECT translation FROM dictionary WHERE word = $word LIMIT 1";
+
+        cmd.Parameters.AddWithValue("$word", word);
+
+        var result = cmd.ExecuteScalar();
+
+        return result?.ToString();
+    }
 }
