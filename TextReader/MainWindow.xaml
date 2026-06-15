@@ -124,6 +124,10 @@
                     Content="Режим чтения"
                     Click="ModeButton_Click"/>
 
+            <Button x:Name="TranslateButton"
+                    Content="Перевод"
+                    Click="TranslateButton_Click"/>
+
         </StackPanel>
 
         <RichTextBox x:Name="Editor"
@@ -139,6 +143,30 @@
                         ViewingMode="Page"
                         Background="{DynamicResource EditorBackground}"
                         Foreground="{DynamicResource EditorForeground}"/>
+
+            <!-- РЕЖИМ ЧИТАЛКИ С ПЕРЕВОДОМ -->
+        <Grid x:Name="TranslateModeGrid" Visibility="Collapsed">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ОРИГИНАЛ -->
+            <FlowDocumentReader x:Name="TranslateOriginalReader"
+                         Grid.Column="0"
+                         ViewingMode="Scroll"
+                         Background="{DynamicResource EditorBackground}"
+                         Foreground="{DynamicResource EditorForeground}"/>
+
+            <!-- ПЕРЕВОД -->
+            <RichTextBox x:Name="TranslateViewer"
+                 Grid.Column="1"
+                 IsReadOnly="True"
+                 Background="{DynamicResource EditorBackground}"
+                 Foreground="{DynamicResource EditorForeground}"/>
+
+        </Grid>
 
     </DockPanel>
     

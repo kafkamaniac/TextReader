@@ -16,13 +16,15 @@ namespace TextReader;
 public partial class MainWindow : Window
 {
     private readonly EditorState _state = new();
-    private bool _isReadingMode = false;
+    private readonly TranslationService _translator = new();
+    private AppMode _currentMode = AppMode.Edit;
     public enum AppMode
     {
         Edit,
         ReadPages,
         ReadBook,
-        ReadScroll
+        ReadScroll,
+        TranslateRead
     }
     public MainWindow()
     {
@@ -109,10 +111,10 @@ public partial class MainWindow : Window
         {
             FileService.SaveDocxFromRichTextBox(path, Editor);
         }
-            _state.CurrentFilePath = path;
-            _state.IsModified = false;
-            _state.IsLoading = false;
-            EditorStateService.UpdateTitle(this, _state);
+        _state.CurrentFilePath = path;
+        _state.IsModified = false;
+        _state.IsLoading = false;
+        EditorStateService.UpdateTitle(this, _state);
 
     }
 
@@ -253,6 +255,18 @@ public partial class MainWindow : Window
         }
     }
 
+    private void TranslateButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentMode == AppMode.TranslateRead)
+        {
+            SetMode(AppMode.Edit);
+        }
+        else
+        {
+            SetMode(AppMode.TranslateRead);
+        }
+    }
+
     private string GetText()
     {
         return new TextRange(
@@ -267,10 +281,15 @@ public partial class MainWindow : Window
 
     private void SetMode(AppMode mode)
     {
+        Editor.Visibility = Visibility.Collapsed;
+        Reader.Visibility = Visibility.Collapsed;
+        TranslateModeGrid.Visibility = Visibility.Collapsed;
+
+        _currentMode = mode;
+
         switch (mode)
         {
             case AppMode.Edit:
-                Reader.Visibility = Visibility.Collapsed;
                 Editor.Visibility = Visibility.Visible;
                 break;
 
@@ -285,12 +304,23 @@ public partial class MainWindow : Window
             case AppMode.ReadScroll:
                 SwitchToReader(FlowDocumentReaderViewingMode.Scroll);
                 break;
+
+            case AppMode.TranslateRead:
+                EnterTranslateMode();
+                break;
         }
+
+        UpdateModeButton();
+    }
+
+    private void SetText(RichTextBox box, string text)
+    {
+        box.Document = new FlowDocument(new Paragraph(new Run(text ?? "")));
     }
 
     private void SwitchToReader(FlowDocumentReaderViewingMode mode)
     {
-        Reader.Document = CloneFlowDocument(Editor.Document); 
+        Reader.Document = CloneFlowDocument(Editor.Document);
 
         Reader.ViewingMode = mode;
 
@@ -323,25 +353,44 @@ public partial class MainWindow : Window
 
     private void ModeButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_isReadingMode)
-        {
-            ExitReadingMode();
-        }
+        if (_currentMode == AppMode.Edit)
+            SetMode(AppMode.ReadPages);
         else
-        {
-            SwitchToReader(FlowDocumentReaderViewingMode.Page);
-        }
-
-        _isReadingMode = !_isReadingMode;
-        UpdateModeButton();
+            SetMode(AppMode.Edit);
     }
 
     private void UpdateModeButton()
     {
-        ModeButton.Content = _isReadingMode
-            ? "Редактировать"
-            : "Режим чтения";
+        ModeButton.Content = _currentMode switch
+        {
+            AppMode.Edit => "Режим чтения",
+            AppMode.ReadPages => "Редактировать",
+            AppMode.ReadBook => "Редактировать",
+            AppMode.ReadScroll => "Редактировать",
+            AppMode.TranslateRead => "Редактировать",
+            _ => "Режим чтения"
+        };
     }
+
+    private async void EnterTranslateMode()
+    {
+        TranslateModeGrid.Visibility = Visibility.Visible;
+
+        TranslateOriginalReader.Document = CloneFlowDocument(Editor.Document);
+
+        string text = GetText();
+
+        string translated = await _translator.TranslateText(text);
+
+        SetText(TranslateViewer, translated);
+    }
+
+    private void ExitTranslateMode()
+    {
+        TranslateModeGrid.Visibility = Visibility.Collapsed;
+        Editor.Visibility = Visibility.Visible;
+    }
+
 
     #endregion
 
