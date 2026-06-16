@@ -43,7 +43,7 @@ public partial class SettingsWindow : Window
                 AppearancePanel.Visibility = Visibility.Visible;
                 break;
 
-            case "Reading":
+            case "ReadingMode":
                 ReadingPanel.Visibility = Visibility.Visible;
                 break;
 
@@ -105,17 +105,16 @@ public partial class SettingsWindow : Window
     }
 
 
-
     private void ApplyReading_Click(object sender, RoutedEventArgs e)
     {
         string mode = (ReadingModeBox.SelectedItem as ComboBoxItem)?
-                      .Content?.ToString() ?? "";
+                      .Tag?.ToString() ?? "";
 
         SelectedMode = mode switch
         {
-            "Страницы" => AppMode.ReadPages,
-            "Книга" => AppMode.ReadBook,
-            "Прокрутка" => AppMode.ReadScroll,
+            "Page" => AppMode.ReadPages,
+            "TwoPage" => AppMode.ReadBook,
+            "Scroll" => AppMode.ReadScroll,
             _ => AppMode.Edit
         };
 

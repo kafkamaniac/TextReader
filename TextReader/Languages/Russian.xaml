@@ -35,4 +35,8 @@
 
     <sys:String x:Key="Untitled">Безымянный</sys:String>
     <sys:String x:Key="SaveChanges">Сохранить изменения?</sys:String>
+
+    <sys:String x:Key="PageMode">Страница</sys:String>
+    <sys:String x:Key="TwoPageMode">Две страницы</sys:String>
+    <sys:String x:Key="ScrollMode">Прокрутка</sys:String>
 </ResourceDictionary>

@@ -20,7 +20,7 @@
                          Tag="Appearance"/>
 
             <ListBoxItem Content="{DynamicResource ReadMode}"
-                         Tag="ReadMode" Selected="ListBoxItem_Selected"/>
+                         Tag="ReadingMode"/>
 
             <ListBoxItem Content="{DynamicResource Language}"
                          Tag="Language"/>
@@ -59,9 +59,9 @@
 
                 <ComboBox x:Name="ReadingModeBox">
 
-                    <ComboBoxItem Content="Страницы"/>
-                    <ComboBoxItem Content="Книга"/>
-                    <ComboBoxItem Content="Прокрутка"/>
+                    <ComboBoxItem Content="{DynamicResource PageMode}" Tag="Page"/>
+                    <ComboBoxItem Content="{DynamicResource TwoPageMode}" Tag="TwoPage"/>
+                    <ComboBoxItem Content="{DynamicResource ScrollMode}" Tag="Scroll"/>
 
                 </ComboBox>
 
