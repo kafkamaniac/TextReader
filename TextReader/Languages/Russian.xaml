@@ -1,0 +1,38 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="File">Файл</sys:String>
+    <sys:String x:Key="New">Создать</sys:String>
+    <sys:String x:Key="Open">Открыть</sys:String>
+    <sys:String x:Key="Save">Сохранить</sys:String>
+    <sys:String x:Key="Settings">Настройки</sys:String>
+
+    <sys:String x:Key="Appearance">Оформление</sys:String>
+    <sys:String x:Key="ReadMode">Режим чтения</sys:String>
+    <sys:String x:Key="EditMode">Редактирование</sys:String>
+    <sys:String x:Key="Language">Язык</sys:String>
+
+    <sys:String x:Key="InterfaceLanguage">Язык интерфейса</sys:String>
+    <sys:String x:Key="Apply">Применить</sys:String>
+
+    <sys:String x:Key="LightTheme">Светлая</sys:String>
+    <sys:String x:Key="DarkTheme">Тёмная</sys:String>
+    <sys:String x:Key="SepiaTheme">Сепия</sys:String>
+
+    <sys:String x:Key="Color">Цвет</sys:String>
+    <sys:String x:Key="Size">Размер</sys:String>
+    <sys:String x:Key="Font">Шрифт</sys:String>
+
+    <sys:String x:Key="Design">Сменить оформление:</sys:String>
+    <sys:String x:Key="ChangeLang">Сменить язык:</sys:String>
+
+    <sys:String x:Key="LeftHint">По левому краю</sys:String>
+    <sys:String x:Key="CenterHint">По центру</sys:String>
+    <sys:String x:Key="RightHint">По правому краю</sys:String>
+    <sys:String x:Key="Justify">По ширине</sys:String>
+
+    <sys:String x:Key="Untitled">Безымянный</sys:String>
+    <sys:String x:Key="SaveChanges">Сохранить изменения?</sys:String>
+</ResourceDictionary>

@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using static TextReader.MainWindow;
+using TextReader.Services;
 
 namespace TextReader;
 
@@ -34,32 +35,36 @@ public partial class SettingsWindow : Window
 
         AppearancePanel.Visibility = Visibility.Collapsed;
         ReadingPanel.Visibility = Visibility.Collapsed;
+        LanguagePanel.Visibility = Visibility.Collapsed;
 
-        switch (category)
+        switch (item.Tag?.ToString())
         {
-            case "Оформление":
+            case "Appearance":
                 AppearancePanel.Visibility = Visibility.Visible;
                 break;
 
-            case "Режим чтения":
+            case "Reading":
                 ReadingPanel.Visibility = Visibility.Visible;
+                break;
+
+            case "Language":
+                LanguagePanel.Visibility = Visibility.Visible;
                 break;
         }
     }
 
     private void Apply_Click(object sender, RoutedEventArgs e)
     {
-        string theme =
-            (ThemeBox.SelectedItem as ComboBoxItem)?
-            .Content?.ToString() ?? "Светлая";
+        if (ThemeBox.SelectedItem is not ComboBoxItem item)
+            return;
 
-        switch (theme)
+        switch (item.Tag?.ToString())
         {
-            case "Тёмная":
+            case "Dark":
                 ApplyDarkTheme();
                 break;
 
-            case "Сепия":
+            case "Sepia":
                 ApplySepiaTheme();
                 break;
 
@@ -68,7 +73,6 @@ public partial class SettingsWindow : Window
                 break;
         }
     }
-
     private void ApplyLightTheme()
     {
         Application.Current.Resources["WindowBackground"] = Brushes.White;
@@ -117,4 +121,18 @@ public partial class SettingsWindow : Window
 
         DialogResult = true;
     }
+
+    private void ApplyLanguage_Click(object sender, RoutedEventArgs e)
+    {
+        string language =
+            (LanguageBox.SelectedItem as ComboBoxItem)?
+            .Content?.ToString() ?? "Русский";
+
+        LanguageService.ChangeLanguage(language);
+        Application.Current.MainWindow.Dispatcher.Invoke(() =>
+        {
+            ((MainWindow)Application.Current.MainWindow).UpdateModeButton();
+        });
+    }
+
 }

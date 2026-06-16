@@ -36,6 +36,12 @@ public partial class MainWindow : Window
         LoadFontSizes();
         UpdateModeButton();
     }
+    public void UpdateModeButton()
+    {
+        ModeButton.Content = (_isReadingMode
+            ? Application.Current.FindResource("EditMode")
+            : Application.Current.FindResource("ReadMode"));
+    }
 
     private void New_Click(object sender, RoutedEventArgs e)
     {
@@ -366,12 +372,6 @@ public partial class MainWindow : Window
         UpdateModeButton();
     }
 
-    private void UpdateModeButton()
-    {
-        ModeButton.Content = _isReadingMode
-            ? "Редактировать"
-            : "Режим чтения";
-    }
 
     private void Reader_PreviewMouseUp(object sender, MouseButtonEventArgs e)
     {

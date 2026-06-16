@@ -13,7 +13,7 @@ public static class EditorStateService
     public static void UpdateTitle(Window window, EditorState state)
     {
         string fileName = state.CurrentFilePath == null
-            ? "Безымянный"
+            ? (string)System.Windows.Application.Current.FindResource("Untitled")
             : Path.GetFileName(state.CurrentFilePath);
 
         window.Title = state.IsModified
@@ -27,8 +27,8 @@ public static class EditorStateService
             return true;
 
         var result = MessageBox.Show(
-            "Сохранить изменения?",
-            "TextReader",
+             (string)System.Windows.Application.Current.FindResource("SaveChanges"),
+                "TextReader",
             MessageBoxButton.YesNoCancel,
             MessageBoxImage.Question);
 

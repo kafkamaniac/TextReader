@@ -11,52 +11,87 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
+        <!-- LEFT MENU -->
         <ListBox x:Name="CategoryList"
                  SelectionChanged="CategoryList_SelectionChanged">
 
-            <ListBoxItem Content="Оформление"
-                         IsSelected="True"/>
+            <ListBoxItem Content="{DynamicResource Appearance}"
+                         IsSelected="True"
+                         Tag="Appearance"/>
 
-            <ListBoxItem Content="Режим чтения"/>
+            <ListBoxItem Content="{DynamicResource ReadMode}"
+                         Tag="ReadMode" Selected="ListBoxItem_Selected"/>
+
+            <ListBoxItem Content="{DynamicResource Language}"
+                         Tag="Language"/>
 
         </ListBox>
 
-        <Grid Grid.Column="1">
+        <!-- RIGHT CONTENT AREA -->
+        <Grid Grid.Column="1" Margin="10">
 
-            <StackPanel x:Name="AppearancePanel"
-                        Margin="10">
+            <!-- APPEARANCE -->
+            <StackPanel x:Name="AppearancePanel">
 
-                <TextBlock Text="Тема оформления"/>
+                <TextBlock Text="{DynamicResource Design}"
+                           Margin="0,0,0,10"/>
 
                 <ComboBox x:Name="ThemeBox">
-                    <ComboBoxItem Content="Светлая"/>
-                    <ComboBoxItem Content="Тёмная"/>
-                    <ComboBoxItem Content="Сепия"/>
+
+                    <ComboBoxItem Content="{DynamicResource LightTheme}" Tag="Light"/>
+                    <ComboBoxItem Content="{DynamicResource DarkTheme}" Tag="Dark"/>
+                    <ComboBoxItem Content="{DynamicResource SepiaTheme}" Tag="Sepia"/>
+
                 </ComboBox>
 
-                <Button Content="Применить"
+                <Button Content="{DynamicResource Apply}"
                         Margin="0,10,0,0"
                         Click="Apply_Click"/>
+
             </StackPanel>
 
+            <!-- READING MODE -->
             <StackPanel x:Name="ReadingPanel"
-                        Margin="10"
                         Visibility="Collapsed">
 
-                <TextBlock Text="Режим чтения"/>
-                
+                <TextBlock Text="{DynamicResource ReadMode}"
+                           Margin="0,0,0,10"/>
+
                 <ComboBox x:Name="ReadingModeBox">
+
                     <ComboBoxItem Content="Страницы"/>
                     <ComboBoxItem Content="Книга"/>
                     <ComboBoxItem Content="Прокрутка"/>
+
                 </ComboBox>
 
-                <Button Content="Применить" Click="ApplyReading_Click"/>
+                <Button Content="{DynamicResource Apply}"
+                        Margin="0,10,0,0"
+                        Click="ApplyReading_Click"/>
+
+            </StackPanel>
+
+            <!-- LANGUAGE -->
+            <StackPanel x:Name="LanguagePanel"
+                        Visibility="Collapsed">
+
+                <TextBlock Text="{DynamicResource ChangeLang}"
+                           Margin="0,0,0,10"/>
+
+                <ComboBox x:Name="LanguageBox">
+
+                    <ComboBoxItem Content="Русский"/>
+                    <ComboBoxItem Content="English"/>
+
+                </ComboBox>
+
+                <Button Content="{DynamicResource Apply}"
+                        Margin="0,10,0,0"
+                        Click="ApplyLanguage_Click"/>
 
             </StackPanel>
 
         </Grid>
 
     </Grid>
-
 </Window>

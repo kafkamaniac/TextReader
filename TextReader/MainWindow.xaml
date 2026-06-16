@@ -13,20 +13,20 @@
     <DockPanel>
 
         <Menu DockPanel.Dock="Top">
-            <MenuItem Header="Файл">
+            <MenuItem Header="{DynamicResource File}">
 
-                <MenuItem Header="Создать"
+                <MenuItem Header="{DynamicResource New}"
                   Click="New_Click"/>
 
-                <MenuItem Header="Открыть"
+                <MenuItem Header="{DynamicResource Open}"
                   Click="Open_Click"/>
 
-                <MenuItem Header="Сохранить"
+                <MenuItem Header="{DynamicResource Save}"
                   Click="Save_Click"/>
 
             </MenuItem>
 
-            <MenuItem Header="Настройки"
+            <MenuItem Header="{DynamicResource Settings}"
               Click="Settings_Click"/>
         </Menu>
         
@@ -54,7 +54,7 @@
 
             <Button Width="30"
         Click="AlignLeft_Click"
-        ToolTip="По левому краю">
+        ToolTip="{DynamicResource LeftHint}">
                 <StackPanel>
                     <Rectangle Height="2" Width="16" Fill="Black"/>
                     <Rectangle Height="2" Width="12" Fill="Black" Margin="0,2,4,0"/>
@@ -64,7 +64,9 @@
             </Button>
 
             <Button Width="30"
-        Click="AlignCenter_Click">
+        Click="AlignCenter_Click"
+                    ToolTip="{DynamicResource CenterHint}">
+            
                 <StackPanel HorizontalAlignment="Center">
                     <Rectangle Height="2" Width="16" Fill="Black"/>
                     <Rectangle Height="2" Width="10" Fill="Black" Margin="0,2,0,0"/>
@@ -76,7 +78,7 @@
             <Button Width="30"
                     
         Click="AlignRight_Click"
-        ToolTip="По правому краю">
+        ToolTip="{DynamicResource RightHint}">
                 <StackPanel HorizontalAlignment="Right">
                     <Rectangle Height="2" Width="16" Fill="Black"/>
                     <Rectangle Height="2" Width="12" Fill="Black" Margin="4,2,0,0"/>
@@ -87,7 +89,7 @@
 
             <Button Width="30"
         Click="Justify_Click"
-        ToolTip="По ширине">
+        ToolTip="{DynamicResource Justify}">
                 <StackPanel>
                     <Rectangle Height="2" Width="16" Fill="Black"/>
                     <Rectangle Height="2" Width="16" Fill="Black" Margin="0,2,0,0"/>
@@ -96,7 +98,7 @@
                 </StackPanel>
             </Button>
 
-            <TextBlock Text="Размер:"
+            <TextBlock Text="{DynamicResource Size}"
                        VerticalAlignment="Center"
                        Margin="5,0"/>
             <ComboBox x:Name="FontSizeBox"
@@ -106,14 +108,14 @@
                       LostFocus="FontSize_LostFocus"
                       KeyDown="FontSize_KeyDown"/>
 
-            <TextBlock Text="Шрифт:"
+            <TextBlock Text="{DynamicResource Font}"
                        VerticalAlignment="Center"
                        Margin="5,0"/>
             <ComboBox x:Name="FontFamilyBox"
                       Width="200"
                       SelectionChanged="FontFamily_Changed"/>
 
-            <TextBlock Text="Цвет:"
+            <TextBlock Text="{DynamicResource Color}"
                        VerticalAlignment="Center"
                        Margin="5,0"/>
             <xctk:ColorPicker x:Name="ColorPickerBox"
@@ -121,7 +123,7 @@
                   SelectedColorChanged="ColorPicker_Changed"/>
 
             <Button x:Name="ModeButton"
-                    Content="Режим чтения"
+                    Content="{DynamicResource ReadMode}"
                     Click="ModeButton_Click"/>
 
         </StackPanel>
