@@ -43,4 +43,7 @@
     <sys:String x:Key="Notebook">Тетрадь</sys:String>
     <sys:String x:Key="AddWordToNotebook">Добавить в Тетрадь</sys:String>
     <sys:String x:Key="AddedToNotebook">Слово добавлено в тетрадь!</sys:String>
+
+    <sys:String x:Key="DeleteQuestion">Удалить слово из Тетради?</sys:String>
+    <sys:String x:Key="Delete">Удалить</sys:String>
 </ResourceDictionary>

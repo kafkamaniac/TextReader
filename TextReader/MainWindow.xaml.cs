@@ -476,8 +476,27 @@ public partial class MainWindow : Window
             NotebookList.Visibility = Visibility.Visible;
             NotebookList.ItemsSource = VocabularyBook.Items;
         }
-    
 
+    private void NotebookList_SelectionChanged(
+    object sender,
+    SelectionChangedEventArgs e)
+    {
+        if (NotebookList.SelectedItem is not VocabularyItem item)
+            return;
+
+        var result = MessageBox.Show(
+            (System.Windows.Application.Current.FindResource("DeleteQuestion").ToString()),
+            System.Windows.Application.Current.FindResource("Delete").ToString(),
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            VocabularyBook.Items.Remove(item);
+        }
+
+        NotebookList.SelectedItem = null;
+    }
 
     #endregion
 

@@ -172,7 +172,8 @@
 
         <ListBox x:Name="NotebookList"
          Visibility="Collapsed"
-         Background="White">
+         Background="White"
+         SelectionChanged="NotebookList_SelectionChanged">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel>
