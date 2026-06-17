@@ -1,4 +1,6 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.ExtendedProperties;
+using Microsoft.Data.Sqlite;
 using Microsoft.Win32;
 using System.ComponentModel;
 using System.IO;
@@ -18,19 +20,37 @@ public partial class MainWindow : Window
 {
     private readonly EditorState _state = new();
     private bool _isReadingMode = false;
+    private string _currentWord;
+    private string _currentTranslation;
+    private AppData _appData;
     public enum AppMode
     {
         Edit,
         ReadPages,
         ReadBook,
-        ReadScroll
+        ReadScroll,
+        Notebook
     }
     public MainWindow()
     {
         InitializeComponent();
+        _appData = SaveService.Load();
+
+        ThemeService.ApplyTheme(_appData.Theme);
+
+        CurrentThemeName = _appData.Theme;
+
+        foreach (var item in _appData.Vocabulary)
+        {
+            VocabularyBook.Items.Add(item);
+        }
+
+
         Editor.TextChanged += Editor_TextChanged;
         Editor.SelectionChanged += Editor_SelectionChanged;
         Reader.PreviewMouseUp += Reader_PreviewMouseUp;
+        NotebookList.ItemsSource = VocabularyBook.Items;
+        Closing += Window_Closing;
 
         LoadFonts();
         LoadFontSizes();
@@ -39,8 +59,8 @@ public partial class MainWindow : Window
     public void UpdateModeButton()
     {
         ModeButton.Content = (_isReadingMode
-            ? Application.Current.FindResource("EditMode")
-            : Application.Current.FindResource("ReadMode"));
+            ? System.Windows.Application.Current.FindResource("EditMode")
+            : System.Windows.Application.Current.FindResource("ReadMode"));
     }
 
     private void New_Click(object sender, RoutedEventArgs e)
@@ -277,15 +297,27 @@ public partial class MainWindow : Window
         if (!EditorStateService.AskToSave(_state, Editor))
         {
             e.Cancel = true;
+            return;
         }
+
+        _appData.Theme = CurrentThemeName;
+
+        _appData.Vocabulary =
+            VocabularyBook.Items.ToList();
+
+        SaveService.Save(_appData);
     }
+
+    private string CurrentThemeName = "Light";
 
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
-        SettingsWindow settings = new SettingsWindow();
+        SettingsWindow settings = new();
 
         if (settings.ShowDialog() == true)
         {
+            CurrentThemeName = settings.SelectedTheme;
+
             SetMode(settings.SelectedMode);
         }
     }
@@ -378,7 +410,10 @@ public partial class MainWindow : Window
         var selection = Reader.Selection;
 
         if (selection == null)
+        {
+            TranslatePopup.IsOpen = false;
             return;
+        }
 
         string selectedText = selection.Text?.Trim();
 
@@ -392,12 +427,57 @@ public partial class MainWindow : Window
 
         string translation = DictionaryService.GetTranslation(selectedText);
 
-        if (!string.IsNullOrWhiteSpace(translation))
+        if (string.IsNullOrWhiteSpace(translation))
         {
-            PopupText.Text = translation;
-            TranslatePopup.IsOpen = true;
+            TranslatePopup.IsOpen = false;
+            return;
         }
+
+        _currentWord = selectedText;
+        _currentTranslation = translation;
+
+        PopupText.Text = translation;
+        TranslatePopup.IsOpen = true;
     }
+
+
+    private void AddToNotebook_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_currentWord))
+            return;
+
+        VocabularyBook.Add(_currentWord, _currentTranslation);
+
+        MessageBox.Show(System.Windows.Application.Current.FindResource("AddedToNotebook").ToString());
+    }
+
+    private bool _isNotebookOpen = false;
+
+    private void ToggleNotebook_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isNotebookOpen)
+        {
+            NotebookList.Visibility = Visibility.Collapsed;
+            Editor.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            ShowNotebook();
+        }
+
+        _isNotebookOpen = !_isNotebookOpen;
+    }
+
+    public void ShowNotebook()
+        {
+            Editor.Visibility = Visibility.Collapsed;
+            Reader.Visibility = Visibility.Collapsed;
+
+            NotebookList.Visibility = Visibility.Visible;
+            NotebookList.ItemsSource = VocabularyBook.Items;
+        }
+    
+
 
     #endregion
 

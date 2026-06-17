@@ -40,4 +40,8 @@
     <sys:String x:Key="TwoPageMode">Two pages</sys:String>
     <sys:String x:Key="ScrollMode">Scroll</sys:String>
 
+    <sys:String x:Key="Notebook">Notebook</sys:String>
+    <sys:String x:Key="AddWordToNotebook">Add to Notebook</sys:String>
+    <sys:String x:Key="AddedToNotebook">The word's added to Notebook!</sys:String>
+
 </ResourceDictionary>

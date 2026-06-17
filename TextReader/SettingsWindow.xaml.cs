@@ -12,6 +12,8 @@ public partial class SettingsWindow : Window
     private bool _isLoaded;
     public AppMode SelectedMode { get; private set; } = AppMode.Edit;
 
+    public string SelectedTheme { get; private set; } = "Light";
+
     public SettingsWindow()
     {
         InitializeComponent();
@@ -55,53 +57,19 @@ public partial class SettingsWindow : Window
 
     private void Apply_Click(object sender, RoutedEventArgs e)
     {
-        if (ThemeBox.SelectedItem is not ComboBoxItem item)
-            return;
+        string theme =
+            (ThemeBox.SelectedItem as ComboBoxItem)?
+            .Tag?.ToString() ?? "Light";
 
-        switch (item.Tag?.ToString())
-        {
-            case "Dark":
-                ApplyDarkTheme();
-                break;
+        ApplyTheme(theme);
 
-            case "Sepia":
-                ApplySepiaTheme();
-                break;
-
-            default:
-                ApplyLightTheme();
-                break;
-        }
-    }
-    private void ApplyLightTheme()
-    {
-        Application.Current.Resources["WindowBackground"] = Brushes.White;
-        Application.Current.Resources["EditorBackground"] = Brushes.White;
-        Application.Current.Resources["EditorForeground"] = Brushes.Black;
+        DialogResult = true;
     }
 
-    private void ApplyDarkTheme()
+    private void ApplyTheme(string themeName)
     {
-        Application.Current.Resources["WindowBackground"] =
-            new SolidColorBrush(Color.FromRgb(30, 30, 30));
-
-        Application.Current.Resources["EditorBackground"] =
-            new SolidColorBrush(Color.FromRgb(45, 45, 45));
-
-        Application.Current.Resources["EditorForeground"] =
-            Brushes.White;
-    }
-
-    private void ApplySepiaTheme()
-    {
-        Application.Current.Resources["WindowBackground"] =
-            new SolidColorBrush(Color.FromRgb(244, 236, 220));
-
-        Application.Current.Resources["EditorBackground"] =
-            new SolidColorBrush(Color.FromRgb(251, 240, 217));
-
-        Application.Current.Resources["EditorForeground"] =
-            Brushes.Black;
+        SelectedTheme = themeName;
+        ThemeService.ApplyTheme(themeName);
     }
 
 
