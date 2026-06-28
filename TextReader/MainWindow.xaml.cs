@@ -3,7 +3,9 @@ using DocumentFormat.OpenXml.ExtendedProperties;
 using Microsoft.Data.Sqlite;
 using Microsoft.Win32;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Speech.Synthesis;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -20,7 +22,10 @@ public partial class MainWindow : Window
 {
     private readonly EditorState _state = new();
     private readonly SpeechService _speech = new();
+    private AdornerLayer _adornerLayer;
+    private HighlightAdorner _highlightAdorner;
 
+    private bool _isSettingsApplying;
     private string _currentWord;
     private string _currentTranslation;
     private AppData _appData;
@@ -30,7 +35,6 @@ public partial class MainWindow : Window
     public enum AppMode
     {
         Edit,
-        ReadPages,
         ReadBook,
         ReadScroll,
         Notebook
@@ -48,6 +52,7 @@ public partial class MainWindow : Window
             _speech.SetVoice(_appData.VoiceName);
 
         _speech.SetRate(_appData.SpeechRate);
+        _speech.SpeakProgress += Speech_SpeakProgress;
 
         foreach (var item in _appData.Vocabulary)
         {
@@ -60,6 +65,8 @@ public partial class MainWindow : Window
         Reader.PreviewMouseUp += Reader_PreviewMouseUp;
         NotebookList.ItemsSource = VocabularyBook.Items;
         _notebookService = new NotebookService();
+        Loaded += MainWindow_Loaded;
+
 
         LoadFonts();
         LoadFontSizes();
@@ -112,7 +119,7 @@ public partial class MainWindow : Window
         {
             Editor.Document = FileService.LoadDocxAsFlowDocument(dialog.FileName);
 
-            SetMode(AppMode.ReadPages); 
+            SetMode(AppMode.ReadScroll);
 
         }
         else if (extension == ".txt")
@@ -128,6 +135,7 @@ public partial class MainWindow : Window
         _state.IsModified = false;
 
         EditorStateService.UpdateTitle(this, _state);
+        UpdateModeButton();
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -319,6 +327,8 @@ public partial class MainWindow : Window
         _appData.Theme = CurrentThemeName;
         _appData.Vocabulary = VocabularyBook.Items.ToList();
 
+        _speech.SpeakProgress -= Speech_SpeakProgress;
+
         SaveService.Save(_appData);
     }
     
@@ -327,6 +337,8 @@ public partial class MainWindow : Window
 
     private async void Settings_Click(object sender, RoutedEventArgs e)
     {
+        _isSettingsApplying = true;
+
         SettingsWindow settings = new()
         {
             SelectedTheme = CurrentThemeName,
@@ -352,6 +364,8 @@ public partial class MainWindow : Window
 
             SaveService.Save(_appData);
         }
+
+        _isSettingsApplying = false;
     }
 
     private string GetText()
@@ -373,36 +387,52 @@ public partial class MainWindow : Window
         switch (mode)
         {
             case AppMode.Edit:
-                Reader.Visibility = Visibility.Collapsed;
+                ReaderContainer.Visibility = Visibility.Collapsed;
                 ReadingToolbar.Visibility = Visibility.Collapsed;
 
                 Editor.Visibility = Visibility.Visible;
                 break;
 
-            case AppMode.ReadPages:
-                SwitchToReader();
-                break;
-
             case AppMode.ReadBook:
                 SwitchToReader();
+                SetBookMode();
                 break;
 
             case AppMode.ReadScroll:
                 SwitchToReader();
+                SetScrollMode();
                 break;
         }
+    }
+    private void SetBookMode()
+    {
+        Reader.Margin = new Thickness(300, 20, 300, 20);
+    }
+
+    private void SetScrollMode()
+    {
+        Reader.Margin = new Thickness(0);
     }
 
     private void SwitchToReader()
     {
-
-        UpdateModeButton();
+        _adornerLayer?.Remove(_highlightAdorner);
+        _highlightAdorner = null;
 
         Reader.Document = CloneFlowDocument(Editor.Document);
 
         Editor.Visibility = Visibility.Collapsed;
-        Reader.Visibility = Visibility.Visible;
+        NotebookList.Visibility = Visibility.Collapsed;
+
+        ReaderContainer.Visibility = Visibility.Visible;
         ReadingToolbar.Visibility = Visibility.Visible;
+
+        Reader.IsReadOnly = true;
+
+        Grid.SetColumn(Reader, 0);
+        Grid.SetColumnSpan(Reader, 2);
+
+        Reader.Document.PageWidth = double.NaN;
     }
 
     private FlowDocument? CloneFlowDocument(FlowDocument original)
@@ -425,15 +455,10 @@ public partial class MainWindow : Window
         }
         else
         {
-            SetMode(AppMode.ReadPages);
+            SetMode(AppMode.ReadScroll);
         }
 
         UpdateModeButton();
-    }
-
-    private void ReadPages_Click(object sender, RoutedEventArgs e)
-    {
-        SetMode(AppMode.ReadPages);
     }
 
     private void ReadBook_Click(object sender, RoutedEventArgs e)
@@ -449,12 +474,15 @@ public partial class MainWindow : Window
     #region TEXT_TO_SPEECH
     private void TextToSpeech_Click(object sender, RoutedEventArgs e)
     {
+        if (_isSettingsApplying) return;
+
         string text = new TextRange(
             Reader.Document.ContentStart,
             Reader.Document.ContentEnd).Text;
 
         _speech.Read(text);
     }
+
     private void Pause_Click(object sender, RoutedEventArgs e)
     {
         _speech.Pause();
@@ -472,6 +500,8 @@ public partial class MainWindow : Window
 
     private async Task RestartSpeechAsync()
     {
+        if (_isSettingsApplying) return;
+
         string text = new TextRange(
             Reader.Document.ContentStart,
             Reader.Document.ContentEnd).Text;
@@ -485,11 +515,56 @@ public partial class MainWindow : Window
         _speech.Read(text);
     }
 
+    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            InitAdorner();
+        });
+    }
+    private void InitAdorner()
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            _adornerLayer = AdornerLayer.GetAdornerLayer(Reader);
+
+            if (_adornerLayer == null)
+                return;
+
+            _highlightAdorner = new HighlightAdorner(Reader);
+            _adornerLayer.Add(_highlightAdorner);
+        });
+    }
+
+    private void Speech_SpeakProgress(SpeakProgressEventArgs e)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            if (!Reader.IsLoaded || Reader.Document == null)
+                return;
+
+            if (_highlightAdorner == null)
+                return;
+
+            var start = FlowDocumentNavigator.GetTextPointerAtOffset(
+                Reader.Document.ContentStart,
+                e.CharacterPosition);
+
+            if (start == null)
+                return;
+
+            var end = start.GetPositionAtOffset(e.Text.Length);
+
+            _highlightAdorner.UpdateRange(start, end);
+        });
+    }
 
     #endregion
 
     private void Reader_PreviewMouseUp(object sender, MouseButtonEventArgs e)
     {
+        if (_isSettingsApplying) return;
+
         var selection = Reader.Selection;
 
         if (selection == null)
@@ -554,9 +629,11 @@ public partial class MainWindow : Window
     public void ShowNotebook()
         {
             Editor.Visibility = Visibility.Collapsed;
-            Reader.Visibility = Visibility.Collapsed;
+        ReaderContainer.Visibility = Visibility.Collapsed;
+        ReadingToolbar.Visibility = Visibility.Collapsed;
 
-            NotebookList.Visibility = Visibility.Visible;
+
+        NotebookList.Visibility = Visibility.Visible;
             NotebookList.ItemsSource = VocabularyBook.Items;
         }
 

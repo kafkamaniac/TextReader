@@ -42,9 +42,6 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
 
-                <Button Content="Page"
-                        Click="ReadPages_Click"
-                        Margin="5"/>
 
                 <Button Content="Book"
                         Click="ReadBook_Click"
@@ -213,16 +210,15 @@
 
         </Popup>
 
-        <RichTextBox
-                x:Name="Reader"
-                Visibility="Collapsed"
-                Background="{DynamicResource EditorBackground}"
-                Foreground="{DynamicResource EditorForeground}"
-                IsReadOnly="True"
-                IsDocumentEnabled="True"
-                BorderThickness="0"
-                VerticalScrollBarVisibility="Auto"
-                HorizontalScrollBarVisibility="Disabled"/>
+        <Grid x:Name="ReaderContainer">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <RichTextBox x:Name="Reader"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Stretch"/>
+        </Grid>
 
         <ListBox x:Name="NotebookList"
          Visibility="Collapsed"
@@ -240,6 +236,7 @@
         </ListBox>
 
     </DockPanel>
+
 
 </Window>
 
