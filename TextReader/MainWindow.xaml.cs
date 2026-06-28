@@ -44,6 +44,11 @@ public partial class MainWindow : Window
 
         CurrentThemeName = _appData.Theme;
 
+        if (!string.IsNullOrWhiteSpace(_appData.VoiceName))
+            _speech.SetVoice(_appData.VoiceName);
+
+        _speech.SetRate(_appData.SpeechRate);
+
         foreach (var item in _appData.Vocabulary)
         {
             VocabularyBook.Items.Add(item);
@@ -322,9 +327,16 @@ public partial class MainWindow : Window
 
     private async void Settings_Click(object sender, RoutedEventArgs e)
     {
-        SettingsWindow settings = new();
+        SettingsWindow settings = new()
+        {
+            SelectedTheme = CurrentThemeName,
+            SelectedVoice = _appData.VoiceName,
+            SelectedRate = _appData.SpeechRate
+        };
 
         _speech.Stop();
+
+
 
         if (settings.ShowDialog() == true)
         {
@@ -334,6 +346,11 @@ public partial class MainWindow : Window
             _speech.SetRate(settings.SelectedRate);
 
             await RestartSpeechAsync();
+
+            _appData.VoiceName = settings.SelectedVoice;
+            _appData.SpeechRate = settings.SelectedRate;
+
+            SaveService.Save(_appData);
         }
     }
 

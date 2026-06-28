@@ -9,5 +9,9 @@ namespace TextReader.Models
 
         public List<VocabularyItem> Vocabulary { get; set; }
             = new();
+
+        public string VoiceName { get; set; } = "";
+        public int SpeechRate { get; set; } = 0;
+
     }
 }

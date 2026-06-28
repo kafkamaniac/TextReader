@@ -14,10 +14,10 @@ public partial class SettingsWindow : Window
     private SpeechSynthesizer _synth = new SpeechSynthesizer();
     public AppMode SelectedMode { get; private set; } = AppMode.Edit;
 
-    public string SelectedTheme { get; private set; } = "Light";
+    public string SelectedTheme { get; set; } = "Light";
 
-    public string SelectedVoice { get; private set; }
-    public int SelectedRate { get; private set; }
+    public string SelectedVoice { get; set; }
+    public int SelectedRate { get; set; }
 
     public SettingsWindow()
     {
@@ -131,7 +131,8 @@ public partial class SettingsWindow : Window
     private void ApplySpeech_Click(object sender, RoutedEventArgs e)
     {
         SelectedVoice =
-            (VoiceBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+     (VoiceBox.SelectedItem as ComboBoxItem)?
+     .Tag?.ToString() ?? "";
 
         SelectedRate = (int)SpeedSlider.Value;
 
