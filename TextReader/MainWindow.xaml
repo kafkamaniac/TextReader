@@ -30,6 +30,33 @@
               Click="Settings_Click"/>
         </Menu>
 
+        <Border x:Name="ReadingToolbar"
+                DockPanel.Dock="Bottom"
+                Visibility="Collapsed"
+                Background="#F3F3F3"
+                BorderBrush="LightGray"
+                BorderThickness="1"
+                Height="45">
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                <Button Content="Page"
+                        Click="ReadPages_Click"
+                        Margin="5"/>
+
+                <Button Content="Book"
+                        Click="ReadBook_Click"
+                        Margin="5"/>
+
+                <Button Content="Scroll"
+                        Click="ReadScroll_Click"
+                        Margin="5"/>
+
+            </StackPanel>
+        </Border>
+
         <StackPanel Orientation="Horizontal"
             DockPanel.Dock="Top"
             Background="LightGray">
@@ -186,11 +213,16 @@
 
         </Popup>
 
-        <FlowDocumentReader x:Name="Reader"
-                        Visibility="Collapsed"
-                        ViewingMode="Page"
-                        Background="{DynamicResource EditorBackground}"
-                        Foreground="{DynamicResource EditorForeground}"/>
+        <RichTextBox
+                x:Name="Reader"
+                Visibility="Collapsed"
+                Background="{DynamicResource EditorBackground}"
+                Foreground="{DynamicResource EditorForeground}"
+                IsReadOnly="True"
+                IsDocumentEnabled="True"
+                BorderThickness="0"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Disabled"/>
 
         <ListBox x:Name="NotebookList"
          Visibility="Collapsed"

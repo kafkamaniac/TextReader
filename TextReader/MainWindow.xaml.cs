@@ -374,30 +374,35 @@ public partial class MainWindow : Window
         {
             case AppMode.Edit:
                 Reader.Visibility = Visibility.Collapsed;
+                ReadingToolbar.Visibility = Visibility.Collapsed;
+
                 Editor.Visibility = Visibility.Visible;
                 break;
 
             case AppMode.ReadPages:
-                SwitchToReader(FlowDocumentReaderViewingMode.Page);
+                SwitchToReader();
                 break;
 
             case AppMode.ReadBook:
-                SwitchToReader(FlowDocumentReaderViewingMode.TwoPage);
+                SwitchToReader();
                 break;
 
             case AppMode.ReadScroll:
-                SwitchToReader(FlowDocumentReaderViewingMode.Scroll);
+                SwitchToReader();
                 break;
         }
     }
 
-    private void SwitchToReader(FlowDocumentReaderViewingMode mode)
+    private void SwitchToReader()
     {
+
+        UpdateModeButton();
+
         Reader.Document = CloneFlowDocument(Editor.Document);
-        Reader.ViewingMode = mode;
 
         Editor.Visibility = Visibility.Collapsed;
         Reader.Visibility = Visibility.Visible;
+        ReadingToolbar.Visibility = Visibility.Visible;
     }
 
     private FlowDocument? CloneFlowDocument(FlowDocument original)
@@ -412,17 +417,6 @@ public partial class MainWindow : Window
         return (FlowDocument)XamlReader.Load(xmlReader);
     }
 
-    private void ExitReadingMode_Click(object sender, RoutedEventArgs e)
-    {
-        ExitReadingMode();
-    }
-
-    private void ExitReadingMode()
-    {
-        Reader.Visibility = Visibility.Collapsed;
-        Editor.Visibility = Visibility.Visible;
-    }
-
     private void ModeButton_Click(object sender, RoutedEventArgs e)
     {
         if (_currentMode != AppMode.Edit)
@@ -435,6 +429,21 @@ public partial class MainWindow : Window
         }
 
         UpdateModeButton();
+    }
+
+    private void ReadPages_Click(object sender, RoutedEventArgs e)
+    {
+        SetMode(AppMode.ReadPages);
+    }
+
+    private void ReadBook_Click(object sender, RoutedEventArgs e)
+    {
+        SetMode(AppMode.ReadBook);
+    }
+
+    private void ReadScroll_Click(object sender, RoutedEventArgs e)
+    {
+        SetMode(AppMode.ReadScroll);
     }
 
     #region TEXT_TO_SPEECH
@@ -475,8 +484,6 @@ public partial class MainWindow : Window
 
         _speech.Read(text);
     }
-
-
 
 
     #endregion

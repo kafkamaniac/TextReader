@@ -4,6 +4,7 @@ public class SpeechService : IDisposable
 {
     private readonly SpeechSynthesizer _synthesizer;
 
+    public event Action<string>? WordSpoken;
     public SpeechService()
     {
         _synthesizer = new SpeechSynthesizer
@@ -65,4 +66,5 @@ public class SpeechService : IDisposable
         }
         catch { }
     }
+
 }
