@@ -3,7 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Настройки"
         Height="350"
-        Width="600">
+        Width="600"
+                        Background="{DynamicResource EditorBackground}"
+                        Foreground="{DynamicResource EditorForeground}">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -13,7 +15,9 @@
 
         <!-- LEFT MENU -->
         <ListBox x:Name="CategoryList"
-                 SelectionChanged="CategoryList_SelectionChanged">
+                 SelectionChanged="CategoryList_SelectionChanged"
+                        Background="{DynamicResource EditorBackground}"
+                        Foreground="{DynamicResource EditorForeground}">
 
             <ListBoxItem Content="{DynamicResource Appearance}"
                          IsSelected="True"

@@ -46,4 +46,6 @@
 
     <sys:String x:Key="DeleteQuestion">Удалить слово из Тетради?</sys:String>
     <sys:String x:Key="Delete">Удалить</sys:String>
+
+    <sys:String x:Key="TrainingMode">Учить слова</sys:String>
 </ResourceDictionary>

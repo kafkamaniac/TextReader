@@ -1,0 +1,45 @@
+﻿<Window x:Class="TextReader.TrainingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Training" Height="400" Width="600">
+
+    <Grid Margin="20">
+
+        <StackPanel VerticalAlignment="Center">
+
+            <TextBlock x:Name="WordText"
+                       FontSize="32"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
+
+            <TextBlock x:Name="TranslationText"
+                       FontSize="20"
+                       Opacity="0.6"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,30"/>
+
+            <StackPanel Orientation="Horizontal"
+                        Background="BurlyWood"
+                        HorizontalAlignment="Center">
+
+                <Button Content="Не помню"
+                        Background="Red"
+                        Foreground="MistyRose"
+                        Width="120"
+                        Margin="10"
+                        Click="Forgot_Click"/>
+
+                <Button Content="Помню"
+                        Background="Green"
+                        Foreground="Wheat"
+                        Width="120"
+                        Margin="10"
+                        Click="Remember_Click"/>
+
+            </StackPanel>
+
+        </StackPanel>
+
+    </Grid>
+</Window>

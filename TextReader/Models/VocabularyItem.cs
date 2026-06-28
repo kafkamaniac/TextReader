@@ -10,6 +10,6 @@ namespace TextReader.Models
     {
         public string? Word { get; set; }
         public string? Translation { get; set; }
-
+        public int SuccessCount { get; set; }
     }
 }

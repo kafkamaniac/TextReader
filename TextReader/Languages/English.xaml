@@ -47,4 +47,6 @@
     <sys:String x:Key="DeleteQuestion">Are you sure you want to delete this word from the Notebook?</sys:String>
     <sys:String x:Key="Delete">Delete</sys:String>
 
+    <sys:String x:Key="TrainingMode">Training Mode</sys:String>
+
 </ResourceDictionary>

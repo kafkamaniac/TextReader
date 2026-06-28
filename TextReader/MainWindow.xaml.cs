@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     private string _currentWord;
     private string _currentTranslation;
     private AppData _appData;
+    private NotebookService _notebookService;
     public enum AppMode
     {
         Edit,
@@ -50,10 +51,11 @@ public partial class MainWindow : Window
         Editor.SelectionChanged += Editor_SelectionChanged;
         Reader.PreviewMouseUp += Reader_PreviewMouseUp;
         NotebookList.ItemsSource = VocabularyBook.Items;
-        Closing += Window_Closing;
+        _notebookService = new NotebookService();
 
         LoadFonts();
         LoadFontSizes();
+
         UpdateModeButton();
     }
     public void UpdateModeButton()
@@ -101,11 +103,17 @@ public partial class MainWindow : Window
             else if (extension == ".docx")
             {
                 Editor.Document = FileService.LoadDocxAsFlowDocument(dialog.FileName);
+
+                SetMode(AppMode.ReadPages);
+
+                _isReadingMode = true;
+                UpdateModeButton();
             }
             else if (extension == ".txt")
             {
                 string text = File.ReadAllText(dialog.FileName);
                 Editor.Document = new FlowDocument(new Paragraph(new Run(text)));
+
             }
 
             _state.IsLoading = false;
@@ -498,6 +506,18 @@ public partial class MainWindow : Window
         NotebookList.SelectedItem = null;
     }
 
+    private void StartTraining_Click(object sender, RoutedEventArgs e)
+    {
+        _notebookService.StartTraining();
+        var trainingWindow = new TrainingWindow(_notebookService);
+        trainingWindow.Owner = this;
+
+        this.Hide(); 
+
+        trainingWindow.ShowDialog();
+
+        this.Show();
+    }
     #endregion
 
 
