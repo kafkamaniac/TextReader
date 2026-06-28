@@ -19,6 +19,7 @@ namespace TextReader;
 public partial class MainWindow : Window
 {
     private readonly EditorState _state = new();
+    private readonly SpeechService _speech = new();
     private bool _isReadingMode = false;
     private string _currentWord;
     private string _currentTranslation;
@@ -308,13 +309,16 @@ public partial class MainWindow : Window
             return;
         }
 
-        _appData.Theme = CurrentThemeName;
+        _speech?.Stop();
+        Thread.Sleep(50);
+        _speech?.Dispose();
 
-        _appData.Vocabulary =
-            VocabularyBook.Items.ToList();
+        _appData.Theme = CurrentThemeName;
+        _appData.Vocabulary = VocabularyBook.Items.ToList();
 
         SaveService.Save(_appData);
     }
+    
 
     private string CurrentThemeName = "Light";
 
@@ -412,6 +416,31 @@ public partial class MainWindow : Window
         UpdateModeButton();
     }
 
+    #region TEXT_TO_SPEECH
+    private void TextToSpeech_Click(object sender, RoutedEventArgs e)
+    {
+        string text = new TextRange(
+            Reader.Document.ContentStart,
+            Reader.Document.ContentEnd).Text;
+
+        _speech.Read(text);
+    }
+    private void Pause_Click(object sender, RoutedEventArgs e)
+    {
+        _speech.Pause();
+    }
+
+    private void Resume_Click(object sender, RoutedEventArgs e)
+    {
+        _speech.Resume();
+    }
+
+    private void Stop_Click(object sender, RoutedEventArgs e)
+    {
+        _speech.Stop();
+    }
+
+    #endregion
 
     private void Reader_PreviewMouseUp(object sender, MouseButtonEventArgs e)
     {
