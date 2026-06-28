@@ -26,6 +26,10 @@ public partial class MainWindow : Window
     private AppData _appData;
     private NotebookService _notebookService;
 
+    private TextPaginationService _pager;
+    private List<string> _pages;
+    private int _pageIndex;
+
     private AppMode _currentMode = AppMode.Edit;
     public enum AppMode
     {
@@ -41,8 +45,10 @@ public partial class MainWindow : Window
         _appData = SaveService.Load();
 
         ThemeService.ApplyTheme(_appData.Theme);
-
         CurrentThemeName = _appData.Theme;
+
+        var measurer = new RichTextBoxMeasurer(MeasureBox);
+        _pager = new TextPaginationService(measurer);
 
         if (!string.IsNullOrWhiteSpace(_appData.VoiceName))
             _speech.SetVoice(_appData.VoiceName);
@@ -376,11 +382,13 @@ public partial class MainWindow : Window
                 Reader.Visibility = Visibility.Collapsed;
                 ReadingToolbar.Visibility = Visibility.Collapsed;
 
+                Viewer.Visibility = Visibility.Collapsed;
+
                 Editor.Visibility = Visibility.Visible;
                 break;
 
             case AppMode.ReadPages:
-                SwitchToReader();
+                SwitchToPageReader();
                 break;
 
             case AppMode.ReadBook:
@@ -395,13 +403,15 @@ public partial class MainWindow : Window
 
     private void SwitchToReader()
     {
-
         UpdateModeButton();
 
         Reader.Document = CloneFlowDocument(Editor.Document);
 
         Editor.Visibility = Visibility.Collapsed;
+
+        Viewer.Visibility = Visibility.Collapsed;
         Reader.Visibility = Visibility.Visible;
+
         ReadingToolbar.Visibility = Visibility.Visible;
     }
 
@@ -444,6 +454,24 @@ public partial class MainWindow : Window
     private void ReadScroll_Click(object sender, RoutedEventArgs e)
     {
         SetMode(AppMode.ReadScroll);
+    }
+
+    private void Next_Click(object sender, RoutedEventArgs e)
+    {
+        if (_pageIndex < _pages.Count - 1)
+        {
+            _pageIndex++;
+            ShowPage();
+        }
+    }
+
+    private void Prev_Click(object sender, RoutedEventArgs e)
+    {
+        if (_pageIndex > 0)
+        {
+            _pageIndex--;
+            ShowPage();
+        }
     }
 
     #region TEXT_TO_SPEECH
@@ -521,6 +549,40 @@ public partial class MainWindow : Window
 
         PopupText.Text = translation;
         TranslatePopup.IsOpen = true;
+    }
+
+    public void LoadText(string text)
+    {
+        _pages = _pager.BuildPages(text);
+        _pageIndex = 0;
+        ShowPage();
+    }
+
+    private void ShowPage()
+    {
+        Viewer.Document.Blocks.Clear();
+
+        Viewer.Document.Blocks.Add(
+            new Paragraph(new Run(_pages[_pageIndex]))
+        );
+    }
+
+    private void SwitchToPageReader()
+    {
+        UpdateModeButton();
+
+        Editor.Visibility = Visibility.Collapsed;
+        Reader.Visibility = Visibility.Collapsed;
+
+        Viewer.Visibility = Visibility.Visible;
+
+        ReadingToolbar.Visibility = Visibility.Visible;
+
+        string text = new TextRange(
+            Editor.Document.ContentStart,
+            Editor.Document.ContentEnd).Text;
+
+        LoadText(text);
     }
 
 

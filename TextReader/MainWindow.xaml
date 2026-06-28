@@ -224,6 +224,56 @@
                 VerticalScrollBarVisibility="Auto"
                 HorizontalScrollBarVisibility="Disabled"/>
 
+        <Grid x:Name="PageReaderPanel"
+      Visibility="Collapsed">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Страница -->
+            <RichTextBox x:Name="Viewer"
+                 Grid.Row="0"
+                 Margin="20"
+                 Width="500"
+                 HorizontalAlignment="Center"
+                 Background="{DynamicResource EditorBackground}"
+                 Foreground="{DynamicResource EditorForeground}"
+                 IsReadOnly="True"
+                 VerticalScrollBarVisibility="Hidden"
+                 HorizontalScrollBarVisibility="Disabled"/>
+            
+            <RichTextBox x:Name="MeasureBox"
+             Visibility="Collapsed"
+             IsReadOnly="True"/>
+
+            <!-- Панель навигации -->
+            <StackPanel Grid.Row="1"
+                Orientation="Horizontal"
+                HorizontalAlignment="Center"
+                Margin="0,10">
+
+                <Button x:Name="PrevButton"
+                Content="◀"
+                Width="40"
+                Click="Prev_Click"/>
+
+                <TextBlock x:Name="PageLabel"
+                   Margin="20,0"
+                   VerticalAlignment="Center"
+                   FontSize="16"
+                   Text="1 / 1"/>
+
+                <Button x:Name="NextButton"
+                Content="▶"
+                Width="40"
+                Click="Next_Click"/>
+
+            </StackPanel>
+
+        </Grid>
+
         <ListBox x:Name="NotebookList"
          Visibility="Collapsed"
                         Background="{DynamicResource EditorBackground}"
