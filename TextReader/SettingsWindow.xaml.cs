@@ -4,15 +4,20 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using static TextReader.MainWindow;
 using TextReader.Services;
+using System.Speech.Synthesis;
 
 namespace TextReader;
 
 public partial class SettingsWindow : Window
 {
     private bool _isLoaded;
+    private SpeechSynthesizer _synth = new SpeechSynthesizer();
     public AppMode SelectedMode { get; private set; } = AppMode.Edit;
 
     public string SelectedTheme { get; private set; } = "Light";
+
+    public string SelectedVoice { get; private set; }
+    public int SelectedRate { get; private set; }
 
     public SettingsWindow()
     {
@@ -23,6 +28,8 @@ public partial class SettingsWindow : Window
             _isLoaded = true;
             ThemeBox.SelectedIndex = 0;
         };
+
+        LoadVoices();
     }
 
     private void CategoryList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -38,6 +45,7 @@ public partial class SettingsWindow : Window
         AppearancePanel.Visibility = Visibility.Collapsed;
         ReadingPanel.Visibility = Visibility.Collapsed;
         LanguagePanel.Visibility = Visibility.Collapsed;
+        SpeechPanel.Visibility = Visibility.Collapsed;
 
         switch (item.Tag?.ToString())
         {
@@ -51,6 +59,10 @@ public partial class SettingsWindow : Window
 
             case "Language":
                 LanguagePanel.Visibility = Visibility.Visible;
+                break;
+
+            case "Speech":
+                SpeechPanel.Visibility = Visibility.Visible;
                 break;
         }
     }
@@ -100,6 +112,30 @@ public partial class SettingsWindow : Window
         {
             ((MainWindow)Application.Current.MainWindow).UpdateModeButton();
         });
+    }
+
+    private void LoadVoices()
+    {
+        foreach (var voice in _synth.GetInstalledVoices())
+        {
+            VoiceBox.Items.Add(new ComboBoxItem
+            {
+                Content = voice.VoiceInfo.Name,
+                Tag = voice.VoiceInfo.Name
+            });
+        }
+        if (VoiceBox.Items.Count > 0)
+            VoiceBox.SelectedIndex = 0;
+    }
+
+    private void ApplySpeech_Click(object sender, RoutedEventArgs e)
+    {
+        SelectedVoice =
+            (VoiceBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+
+        SelectedRate = (int)SpeedSlider.Value;
+
+        DialogResult = true;
     }
 
 }

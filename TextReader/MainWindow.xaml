@@ -141,6 +141,8 @@
             <Button Click="Stop_Click">
                 <Image Source="Assets/Icons/stop-button.png" Width="16" Height="16"/>
             </Button>
+
+
             <Button x:Name="NotebookButton"
                     Content="{DynamicResource Notebook}"
                     Click="ToggleNotebook_Click"/>

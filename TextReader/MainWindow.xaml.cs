@@ -20,11 +20,13 @@ public partial class MainWindow : Window
 {
     private readonly EditorState _state = new();
     private readonly SpeechService _speech = new();
-    private bool _isReadingMode = false;
+
     private string _currentWord;
     private string _currentTranslation;
     private AppData _appData;
     private NotebookService _notebookService;
+
+    private AppMode _currentMode = AppMode.Edit;
     public enum AppMode
     {
         Edit,
@@ -56,16 +58,15 @@ public partial class MainWindow : Window
 
         LoadFonts();
         LoadFontSizes();
-
         UpdateModeButton();
     }
     public void UpdateModeButton()
     {
-        ModeButton.Content = (_isReadingMode
-            ? System.Windows.Application.Current.FindResource("EditMode")
-            : System.Windows.Application.Current.FindResource("ReadMode"));
+        ModeButton.Content =
+            (_currentMode != AppMode.Edit
+                ? System.Windows.Application.Current.FindResource("EditMode")
+                : System.Windows.Application.Current.FindResource("ReadMode"));
     }
-
     private void New_Click(object sender, RoutedEventArgs e)
     {
         if (!EditorStateService.AskToSave(_state, Editor))
@@ -78,53 +79,50 @@ public partial class MainWindow : Window
 
         EditorStateService.UpdateTitle(this, _state);
     }
-
     private void Open_Click(object sender, RoutedEventArgs e)
     {
-
         if (!EditorStateService.AskToSave(_state, Editor))
             return;
 
-        OpenFileDialog dialog = new OpenFileDialog();
-
-        dialog.Filter =
-    "Все файлы (*.*)|*.*|Текстовые файлы (*.txt)|*.txt|Документы Word (*.docx)|*.docx";
-
-        if (dialog.ShowDialog() == true)
+        OpenFileDialog dialog = new OpenFileDialog
         {
-            _state.IsLoading = true;
+            Filter = "Все файлы (*.*)|*.*|Текстовые файлы (*.txt)|*.txt|Документы Word (*.docx)|*.docx"
+        };
 
-            string extension = Path.GetExtension(dialog.FileName);
-            if (extension != ".txt" && extension != ".docx")
-            {
-                MessageBox.Show("Неподдерживаемый формат файла.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                _state.IsLoading = false;
-                return;
-            }
-            else if (extension == ".docx")
-            {
-                Editor.Document = FileService.LoadDocxAsFlowDocument(dialog.FileName);
+        if (dialog.ShowDialog() != true)
+            return;
 
-                SetMode(AppMode.ReadPages);
+        _state.IsLoading = true;
 
-                _isReadingMode = true;
-                UpdateModeButton();
-            }
-            else if (extension == ".txt")
-            {
-                string text = File.ReadAllText(dialog.FileName);
-                Editor.Document = new FlowDocument(new Paragraph(new Run(text)));
+        string extension = Path.GetExtension(dialog.FileName);
 
-            }
-
+        if (extension != ".txt" && extension != ".docx")
+        {
+            MessageBox.Show("Неподдерживаемый формат файла.");
             _state.IsLoading = false;
-            _state.CurrentFilePath = dialog.FileName;
-            _state.IsModified = false;
-
-            EditorStateService.UpdateTitle(this, _state);
-
+            return;
         }
 
+        if (extension == ".docx")
+        {
+            Editor.Document = FileService.LoadDocxAsFlowDocument(dialog.FileName);
+
+            SetMode(AppMode.ReadPages); 
+
+        }
+        else if (extension == ".txt")
+        {
+            string text = File.ReadAllText(dialog.FileName);
+            Editor.Document = new FlowDocument(new Paragraph(new Run(text)));
+
+            SetMode(AppMode.Edit); 
+        }
+
+        _state.IsLoading = false;
+        _state.CurrentFilePath = dialog.FileName;
+        _state.IsModified = false;
+
+        EditorStateService.UpdateTitle(this, _state);
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -322,15 +320,20 @@ public partial class MainWindow : Window
 
     private string CurrentThemeName = "Light";
 
-    private void Settings_Click(object sender, RoutedEventArgs e)
+    private async void Settings_Click(object sender, RoutedEventArgs e)
     {
         SettingsWindow settings = new();
+
+        _speech.Stop();
 
         if (settings.ShowDialog() == true)
         {
             CurrentThemeName = settings.SelectedTheme;
 
-            SetMode(settings.SelectedMode);
+            _speech.SetVoice(settings.SelectedVoice);
+            _speech.SetRate(settings.SelectedRate);
+
+            await RestartSpeechAsync();
         }
     }
 
@@ -348,6 +351,8 @@ public partial class MainWindow : Window
 
     private void SetMode(AppMode mode)
     {
+        _currentMode = mode;
+
         switch (mode)
         {
             case AppMode.Edit:
@@ -403,16 +408,15 @@ public partial class MainWindow : Window
 
     private void ModeButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_isReadingMode)
+        if (_currentMode != AppMode.Edit)
         {
-            ExitReadingMode();
+            SetMode(AppMode.Edit);
         }
         else
         {
-            SwitchToReader(FlowDocumentReaderViewingMode.Page);
+            SetMode(AppMode.ReadPages);
         }
 
-        _isReadingMode = !_isReadingMode;
         UpdateModeButton();
     }
 
@@ -439,6 +443,24 @@ public partial class MainWindow : Window
     {
         _speech.Stop();
     }
+
+    private async Task RestartSpeechAsync()
+    {
+        string text = new TextRange(
+            Reader.Document.ContentStart,
+            Reader.Document.ContentEnd).Text;
+
+        await Task.Run(() =>
+        {
+            _speech.Stop();
+            Thread.Sleep(50);
+        });
+
+        _speech.Read(text);
+    }
+
+
+
 
     #endregion
 

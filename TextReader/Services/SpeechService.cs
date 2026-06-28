@@ -13,6 +13,11 @@ public class SpeechService : IDisposable
         };
     }
 
+    public IEnumerable<InstalledVoice> GetVoices()
+    {
+        return _synthesizer.GetInstalledVoices();
+    }
+
     public void Read(string text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -39,6 +44,18 @@ public class SpeechService : IDisposable
             _synthesizer.Resume();
     }
 
+    public void SetVoice(string voiceName)
+    {
+        if (string.IsNullOrWhiteSpace(voiceName))
+            return;
+
+        _synthesizer.SelectVoice(voiceName);
+    }
+
+    public void SetRate(int rate)
+    {
+        _synthesizer.Rate = Math.Clamp(rate, -10, 10);
+    }
     public void Dispose()
     {
         try
