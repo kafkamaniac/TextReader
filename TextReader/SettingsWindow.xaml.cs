@@ -92,7 +92,6 @@ public partial class SettingsWindow : Window
 
         SelectedMode = mode switch
         {
-            "Page" => AppMode.ReadPages,
             "TwoPage" => AppMode.ReadBook,
             "Scroll" => AppMode.ReadScroll,
             _ => AppMode.Edit
