@@ -211,13 +211,15 @@
         </Popup>
 
         <Grid x:Name="ReaderContainer">
+
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-
+            <AdornerDecorator>
             <RichTextBox x:Name="Reader"
                  HorizontalAlignment="Stretch"
                  VerticalAlignment="Stretch"/>
+            </AdornerDecorator>
         </Grid>
 
         <ListBox x:Name="NotebookList"

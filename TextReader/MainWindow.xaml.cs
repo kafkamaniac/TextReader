@@ -20,6 +20,9 @@ public partial class MainWindow : Window
 {
     private readonly EditorState _state = new();
     private readonly SpeechService _speech = new();
+    private SpeechHighlightService _highlightService;
+
+    private volatile bool _isStopping;
 
     private bool _isSettingsApplying;
     private string _currentWord;
@@ -48,6 +51,16 @@ public partial class MainWindow : Window
             _speech.SetVoice(_appData.VoiceName);
 
         _speech.SetRate(_appData.SpeechRate);
+        _speech.ProgressChanged += OnSpeechProgress;
+
+        Loaded += (_, __) =>
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _highlightService = new SpeechHighlightService(Reader);
+                _highlightService.Init(Reader);
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        };
 
         foreach (var item in _appData.Vocabulary)
         {
@@ -407,6 +420,7 @@ public partial class MainWindow : Window
 
     private void SwitchToReader()
     {
+
         Reader.Document = CloneFlowDocument(Editor.Document);
 
         Editor.Visibility = Visibility.Collapsed;
@@ -421,6 +435,7 @@ public partial class MainWindow : Window
         Grid.SetColumnSpan(Reader, 2);
 
         Reader.Document.PageWidth = double.NaN;
+        Reader.UpdateLayout();
     }
 
     private FlowDocument? CloneFlowDocument(FlowDocument original)
@@ -464,9 +479,7 @@ public partial class MainWindow : Window
     {
         if (_isSettingsApplying) return;
 
-        string text = new TextRange(
-            Reader.Document.ContentStart,
-            Reader.Document.ContentEnd).Text;
+        string text = GetCleanText(Reader.Document);
 
         _speech.Read(text);
     }
@@ -481,19 +494,28 @@ public partial class MainWindow : Window
         _speech.Resume();
     }
 
-    private void Stop_Click(object sender, RoutedEventArgs e)
+    private async void Stop_Click(object sender, RoutedEventArgs e)
     {
-        _speech.Stop();
-    }
+        if (_isStopping) return; // защита от повторных нажатий
 
+        _isStopping = true;
+
+        // Остановка синтезатора в фоновом потоке
+        await Task.Run(() => _speech.Stop());
+
+        // Небольшая пауза, чтобы все события прогресса успели завершиться
+        await Task.Delay(50);
+
+        // Очистка подсветки – теперь безопасно, UI не заблокирован
+        _highlightService.Clear();
+
+        _isStopping = false;
+    }
     private async Task RestartSpeechAsync()
     {
         if (_isSettingsApplying) return;
 
-        string text = new TextRange(
-            Reader.Document.ContentStart,
-            Reader.Document.ContentEnd).Text;
-
+        string text = GetCleanText(Reader.Document);
         await Task.Run(() =>
         {
             _speech.Stop();
@@ -503,6 +525,28 @@ public partial class MainWindow : Window
         _speech.Read(text);
     }
 
+    private void OnSpeechProgress(int offset)
+    {
+        if (_isStopping || _highlightService == null || Reader.Document == null)
+            return;
+
+
+        var pointer = FlowDocumentNavigator.GetPointerAtOffset(
+            Reader.Document,
+            offset);
+
+        if (pointer == null)
+            return;
+
+        _highlightService.Highlight(pointer);
+    }
+
+    private string GetCleanText(FlowDocument document)
+    {
+        string raw = new TextRange(document.ContentStart, document.ContentEnd).Text;
+        // Удаляем все варианты переносов строк
+        return raw.Replace("\r\n", "").Replace("\n", "").Replace("\r", "");
+    }
 
     #endregion
 

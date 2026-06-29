@@ -1,53 +1,55 @@
 ﻿using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Controls;
 
-public class HighlightService
-{
-    private TextRange? _lastRange;
-
-    private static readonly Brush HighlightBrush =
-        new SolidColorBrush(Color.FromRgb(173, 216, 230));
-
-    public void Clear()
+    public class SpeechHighlightService
     {
-        if (_lastRange != null)
+        private readonly RichTextBox _box;
+        private HighlightAdorner _adorner;
+        private AdornerLayer _layer;
+
+        public SpeechHighlightService(RichTextBox box)
         {
-            _lastRange.ApplyPropertyValue(TextElement.BackgroundProperty, null);
-            _lastRange = null;
+            _box = box;
         }
-    }
 
-    public void HighlightWord(FlowDocument document, string word)
+    public void Init(RichTextBox box)
     {
-        if (string.IsNullOrWhiteSpace(word))
+        _layer = AdornerLayer.GetAdornerLayer(box);
+
+        if (_layer == null)
+        {
+            MessageBox.Show("AdornerLayer = NULL");
             return;
+        }
 
-        Clear();
+        _adorner = new HighlightAdorner(box);
+        _layer.Add(_adorner);
+    }
 
-        TextPointer pointer = document.ContentStart;
-
-        while (pointer != null)
+    public void Highlight(TextPointer pointer)
         {
-            if (pointer.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.Text)
+            if (_adorner == null || pointer == null)
+                return;
+
+            _box.Dispatcher.Invoke(() =>
             {
-                string text = pointer.GetTextInRun(LogicalDirection.Forward);
+                _box.UpdateLayout();
 
-                int index = text.IndexOf(word, StringComparison.OrdinalIgnoreCase);
+                Rect rect = pointer.GetCharacterRect(LogicalDirection.Forward);
 
-                if (index >= 0)
-                {
-                    TextPointer start = pointer.GetPositionAtOffset(index);
-                    TextPointer end = start.GetPositionAtOffset(word.Length);
-
-                    _lastRange = new TextRange(start, end);
-                    _lastRange.ApplyPropertyValue(TextElement.BackgroundProperty, HighlightBrush);
-
+                if (rect.IsEmpty)
                     return;
-                }
-            }
 
-            pointer = pointer.GetNextContextPosition(LogicalDirection.Forward);
+                rect = new Rect(0, rect.Top, _box.ActualWidth, rect.Height);
+
+                _adorner.Update(rect);
+            });
+        }
+
+        public void Clear()
+        {
+            _adorner?.Clear();
         }
     }
-}

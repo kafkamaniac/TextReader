@@ -4,13 +4,18 @@ public class SpeechService : IDisposable
 {
     private readonly SpeechSynthesizer _synthesizer;
 
-    public event Action<string>? WordSpoken;
+    public event Action<int> ProgressChanged;
     public SpeechService()
     {
         _synthesizer = new SpeechSynthesizer
         {
             Volume = 100,
             Rate = 0
+        };
+
+        _synthesizer.SpeakProgress += (s, e) =>
+        {
+            ProgressChanged?.Invoke(e.CharacterPosition);
         };
     }
 
