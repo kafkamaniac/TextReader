@@ -1,24 +1,16 @@
 ﻿using System.Speech.Synthesis;
-using System.Windows.Threading;
 
 public class SpeechService : IDisposable
 {
     private readonly SpeechSynthesizer _synthesizer;
 
-    public event Action<SpeakProgressEventArgs>? SpeakProgress;
-
+    public event Action<string>? WordSpoken;
     public SpeechService()
     {
         _synthesizer = new SpeechSynthesizer
         {
             Volume = 100,
             Rate = 0
-        };
-
-
-        _synthesizer.SpeakProgress += (s, e) =>
-        {
-            SpeakProgress?.Invoke(e);
         };
     }
 
@@ -73,12 +65,6 @@ public class SpeechService : IDisposable
             _synthesizer.Dispose();
         }
         catch { }
-    }
-
-    public void Speech_SpeakProgress(object? sender, SpeakProgressEventArgs e)
-    {
-        System.Diagnostics.Debug.WriteLine(
-            $"Word: {e.Text} | Pos: {e.CharacterPosition} | Length: {e.CharacterCount}");
     }
 
 }
