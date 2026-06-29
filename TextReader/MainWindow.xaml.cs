@@ -25,6 +25,7 @@ public partial class MainWindow : Window
     private SpeechHighlightService _highlightService;
 
     private volatile bool _isStopping;
+    private bool _isTtsRunning;
 
     private bool _isSettingsApplying;
     private string _currentWord;
@@ -36,6 +37,8 @@ public partial class MainWindow : Window
     private bool _hasPendingHighlight;
     private DispatcherTimer _highlightTimer;
     private bool _isSpeakingPage;
+    private int _ttsResumePageIndex = -1;
+    private bool _isPaused;
 
     private AppMode _currentMode = AppMode.Edit;
 
@@ -501,19 +504,6 @@ public partial class MainWindow : Window
         Reader.Document = PageRenderer.Render(page);
     }
 
-
-    private FlowDocument? CloneFlowDocument(FlowDocument original)
-    {
-        if (original == null) return null;
-
-        string xaml = XamlWriter.Save(original);
-
-        using var stringReader = new StringReader(xaml);
-        using var xmlReader = System.Xml.XmlReader.Create(stringReader);
-
-        return (FlowDocument)XamlReader.Load(xmlReader);
-    }
-
     private void ModeButton_Click(object sender, RoutedEventArgs e)
     {
         if (_currentMode != AppMode.Edit)
@@ -543,6 +533,10 @@ public partial class MainWindow : Window
     {
         if (_isSettingsApplying) return;
 
+        if (_isTtsRunning)
+            return;
+
+        _isTtsRunning = true;
         _isSpeakingPage = true;
 
         StartSpeakingCurrentPage();
@@ -551,16 +545,33 @@ public partial class MainWindow : Window
     private void Pause_Click(object sender, RoutedEventArgs e)
     {
         _speech.Pause();
+        _isPaused = true;
+
+        _ttsResumePageIndex = _readingSession.CurrentPageIndex;
     }
 
     private void Resume_Click(object sender, RoutedEventArgs e)
     {
+        if (_readingSession == null)
+            return;
+
         _speech.Resume();
+        _isPaused = false;
+
+        if (_ttsResumePageIndex >= 0 &&
+            _ttsResumePageIndex != _readingSession.CurrentPageIndex)
+        {
+            _readingSession.GoToPage(_ttsResumePageIndex);
+
+            Reader.Document = _readingSession.GetCurrentPage();
+            UpdatePageUI();
+        }
     }
 
     private void Stop_Click(object sender, RoutedEventArgs e)
     {
         _isSpeakingPage = false;
+        _isTtsRunning = false;
 
         _speech.Stop();
 
@@ -726,6 +737,9 @@ public partial class MainWindow : Window
             if (_readingSession == null)
                 return;
 
+            if (!_isTtsRunning)
+                return;
+
             if (_readingSession.NextPage())
             {
                 Reader.Document = _readingSession.GetCurrentPage();
@@ -737,6 +751,7 @@ public partial class MainWindow : Window
             else
             {
                 _isSpeakingPage = false;
+                _isTtsRunning = false;
             }
         });
     }
@@ -745,6 +760,12 @@ public partial class MainWindow : Window
     {
         if (_readingSession == null)
             return;
+
+        if (!_isTtsRunning)
+            return;
+
+        _isTtsRunning = true;
+        _ttsResumePageIndex = _readingSession.CurrentPageIndex;
 
         string text = GetCleanText(Reader.Document);
 
