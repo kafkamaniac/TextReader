@@ -413,11 +413,15 @@ public partial class MainWindow : Window
     {
         Reader.Margin = new Thickness(0);
     }
-
-    private void SwitchToReader()
+    private void SetBookMode()
     {
-        _adornerLayer?.Remove(_highlightAdorner);
-        _highlightAdorner = null;
+        Reader.Margin = new Thickness(300, 20, 300, 20);
+    }
+
+    private void SetScrollMode()
+    {
+
+        UpdateModeButton();
 
         Reader.Document = CloneFlowDocument(Editor.Document);
 
