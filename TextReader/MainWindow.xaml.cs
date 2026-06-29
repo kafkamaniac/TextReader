@@ -53,14 +53,7 @@ public partial class MainWindow : Window
         _speech.SetRate(_appData.SpeechRate);
         _speech.ProgressChanged += OnSpeechProgress;
 
-        Loaded += (_, __) =>
-        {
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                _highlightService = new SpeechHighlightService(Reader);
-                _highlightService.Init(Reader);
-            }), System.Windows.Threading.DispatcherPriority.Loaded);
-        };
+        Loaded += (_, __) => Dispatcher.BeginInvoke(InitHighlight);
 
         foreach (var item in _appData.Vocabulary)
         {
@@ -330,6 +323,10 @@ public partial class MainWindow : Window
         Thread.Sleep(50);
         _speech?.Dispose();
 
+        _speech.ProgressChanged -= OnSpeechProgress;
+        _highlightService?.Dispose(); 
+
+
         _appData.Theme = CurrentThemeName;
         _appData.Vocabulary = VocabularyBook.Items.ToList();
 
@@ -391,6 +388,8 @@ public partial class MainWindow : Window
         switch (mode)
         {
             case AppMode.Edit:
+                Reader.Document = null;
+
                 ReaderContainer.Visibility = Visibility.Collapsed;
                 ReadingToolbar.Visibility = Visibility.Collapsed;
 
@@ -546,6 +545,12 @@ public partial class MainWindow : Window
         string raw = new TextRange(document.ContentStart, document.ContentEnd).Text;
         // Удаляем все варианты переносов строк
         return raw.Replace("\r\n", "").Replace("\n", "").Replace("\r", "");
+    }
+
+    private void InitHighlight()
+    {
+        _highlightService = new SpeechHighlightService(Reader);
+        _highlightService.Init(Reader);
     }
 
     #endregion

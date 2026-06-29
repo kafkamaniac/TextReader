@@ -1,7 +1,8 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
-using System.Windows.Controls;
+using System.Windows.Threading;
 
     public class SpeechHighlightService
     {
@@ -33,9 +34,9 @@ using System.Windows.Controls;
             if (_adorner == null || pointer == null)
                 return;
 
-            _box.Dispatcher.Invoke(() =>
-            {
-                _box.UpdateLayout();
+        _box.Dispatcher.BeginInvoke(new Action(() =>
+        {
+            _box.UpdateLayout();
 
                 Rect rect = pointer.GetCharacterRect(LogicalDirection.Forward);
 
@@ -45,11 +46,22 @@ using System.Windows.Controls;
                 rect = new Rect(0, rect.Top, _box.ActualWidth, rect.Height);
 
                 _adorner.Update(rect);
-            });
-        }
+            }), DispatcherPriority.Background);
+    }
 
         public void Clear()
         {
             _adorner?.Clear();
         }
+
+    public void Dispose()
+    {
+        if (_layer != null && _adorner != null)
+        {
+            _layer.Remove(_adorner);
+        }
+
+        _adorner = null;
+        _layer = null;
     }
+}

@@ -38,53 +38,40 @@ public static class FileService
         File.WriteAllText(dialog.FileName, text);
         return dialog.FileName;
     }
-
     public static FlowDocument LoadDocxAsFlowDocument(string path)
     {
         FlowDocument document = new FlowDocument();
-        //создаём пустой контейнер для документа
 
-        using WordprocessingDocument doc =
-            WordprocessingDocument.Open(path, false);
-        //открываем существующий документ по указанному пути в режиме только для чтения,
-        //используя класс WordprocessingDocument из OpenXML SDK
-
+        using WordprocessingDocument doc = WordprocessingDocument.Open(path, false);
         var body = doc.MainDocumentPart?.Document?.Body;
 
         if (body == null)
             return document;
-       
 
         foreach (var para in body.Elements<Docx.Paragraph>())
         {
             var wpfParagraph = new Wpf.Paragraph();
-            // Получаем свойства абзаца, чтобы определить выравнивание текста
             var paraProps = para.ParagraphProperties;
-
             var alignment = paraProps?.Justification?.Val?.Value;
 
+            // Установка выравнивания
             if (alignment == Docx.JustificationValues.Center)
-            {
                 wpfParagraph.TextAlignment = TextAlignment.Center;
-            }
             else if (alignment == Docx.JustificationValues.Right)
-            {
                 wpfParagraph.TextAlignment = TextAlignment.Right;
-            }
             else if (alignment == Docx.JustificationValues.Both)
-            {
                 wpfParagraph.TextAlignment = TextAlignment.Justify;
-            }
             else
-            {
                 wpfParagraph.TextAlignment = TextAlignment.Left;
-            }
 
             foreach (var run in para.Elements<Docx.Run>())
             {
-                wpfParagraph.Inlines.Add(DocxMapper.ToWpfRun(run));
+                var wpfRun = DocxMapper.ToWpfRun(run);
+                if (wpfRun != null) // ← Добавьте проверку
+                {
+                    wpfParagraph.Inlines.Add(wpfRun);
+                }
             }
-
 
             document.Blocks.Add(wpfParagraph);
         }
