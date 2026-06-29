@@ -718,30 +718,6 @@ public partial class MainWindow : Window
 
     #region NEWSYSTEM
 
-    private void NextPage_Click(object sender, RoutedEventArgs e)
-    {
-        if (_readingSession == null)
-            return;
-
-        if (_readingSession.NextPage())
-        {
-            Reader.Document = _readingSession.GetCurrentPage();
-        }
-        UpdatePageUI();
-    }
-
-    private void PreviousPage_Click(object sender, RoutedEventArgs e)
-    {
-        if (_readingSession == null)
-            return;
-
-        if (_readingSession.PreviousPage())
-        {
-            Reader.Document = _readingSession.GetCurrentPage();
-        }
-
-        UpdatePageUI();
-    }
 
     private void OnSpeakCompleted()
     {
@@ -753,6 +729,8 @@ public partial class MainWindow : Window
             if (_readingSession.NextPage())
             {
                 Reader.Document = _readingSession.GetCurrentPage();
+
+                UpdatePageUI();
 
                 StartSpeakingCurrentPage();
             }
@@ -779,6 +757,24 @@ public partial class MainWindow : Window
 
         PageIndicator.Text =
             $"{_readingSession.CurrentPageIndex + 1} / {_readingSession.TotalPages}";
+    }
+
+    private void NextPage_Click(object sender, RoutedEventArgs e)
+    {
+        if (_readingSession?.NextPage() == true)
+        {
+            Reader.Document = _readingSession.GetCurrentPage();
+            UpdatePageUI();
+        }
+    }
+
+    private void PreviousPage_Click(object sender, RoutedEventArgs e)
+    {
+        if (_readingSession?.PreviousPage() == true)
+        {
+            Reader.Document = _readingSession.GetCurrentPage();
+            UpdatePageUI();
+        }
     }
 
     private void GoToPage_Click(object sender, RoutedEventArgs e)

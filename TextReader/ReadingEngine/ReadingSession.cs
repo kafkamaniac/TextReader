@@ -1,42 +1,54 @@
 ﻿using System.Windows.Documents;
-
-namespace TextReader.ReadingEngine;
+using TextReader.ReadingEngine;
 
 public class ReadingSession
 {
     private PageManager _pageManager;
 
+    public event Action<int>? OnPageChanged;
+
     public int CurrentPageIndex => _pageManager.CurrentPage;
-    public int TotalPages => _pageManager.Pages.Count;
+    public int TotalPages => _pageManager.PageCount;
 
     public void Open(ReadingDocument doc)
     {
         _pageManager = new PageManager(doc);
+        OnPageChanged?.Invoke(_pageManager.CurrentPage);
     }
 
     public FlowDocument GetCurrentPage()
-    {
-        return PageRenderer.Render(_pageManager.Current);
-    }
+        => PageRenderer.Render(_pageManager.Current);
 
     public bool NextPage()
     {
-        return _pageManager.NextPage();
+        if (_pageManager.NextPage())
+        {
+            OnPageChanged?.Invoke(_pageManager.CurrentPage);
+            return true;
+        }
+        return false;
     }
 
     public bool PreviousPage()
     {
-        return _pageManager.PreviousPage();
+        if (_pageManager.PreviousPage())
+        {
+            OnPageChanged?.Invoke(_pageManager.CurrentPage);
+            return true;
+        }
+        return false;
     }
 
     public bool GoToPage(int index)
     {
-        if (index < 0 || index >= _pageManager.Pages.Count)
+        if (_pageManager == null)
             return false;
 
-        _pageManager.SetPage(index); // добавим ниже
+        if (index < 0 || index >= _pageManager.PageCount)
+            return false;
+
+        _pageManager.SetPage(index);
+        OnPageChanged?.Invoke(_pageManager.CurrentPage);
         return true;
     }
-
-
 }

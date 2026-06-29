@@ -2,6 +2,8 @@
 
 public class PageManager
 {
+    public event Action<int> OnPageChanged;
+
     private readonly ReadingDocument _document;
     private readonly int _pageSize;
 
@@ -10,8 +12,20 @@ public class PageManager
     public IReadOnlyList<PageModel> Pages => _pages;
 
     public int PageCount => _pages.Count;
+    private int _currentPage;
 
-    public int CurrentPage { get; private set; }
+    public int CurrentPage
+    {
+        get => _currentPage;
+        private set
+        {
+            if (_currentPage == value)
+                return;
+
+            _currentPage = value;
+            OnPageChanged?.Invoke(_currentPage);
+        }
+    }
 
     public PageModel Current =>
     _pages.Count == 0 ? new PageModel() : _pages[CurrentPage];
@@ -85,5 +99,15 @@ public class PageManager
             return;
 
         CurrentPage = index;
+    }
+
+    public bool GoToPage(int index)
+    {
+        if (index < 0 || index >= _pages.Count)
+            return false;
+
+        _currentPage = index;
+        OnPageChanged?.Invoke(_currentPage);
+        return true;
     }
 }
