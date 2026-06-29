@@ -10,7 +10,9 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
+using System.Windows.Threading;
 using TextReader.Models;
+using TextReader.ReadingEngine;
 using TextReader.Services;
 using WinColor = System.Drawing.Color;
 
@@ -30,7 +32,14 @@ public partial class MainWindow : Window
     private AppData _appData;
     private NotebookService _notebookService;
 
+    private int _lastOffset;
+    private bool _hasPendingHighlight;
+    private DispatcherTimer _highlightTimer;
+    private bool _isSpeakingPage;
+
     private AppMode _currentMode = AppMode.Edit;
+
+    private ReadingSession _readingSession;
     public enum AppMode
     {
         Edit,
@@ -52,8 +61,33 @@ public partial class MainWindow : Window
 
         _speech.SetRate(_appData.SpeechRate);
         _speech.ProgressChanged += OnSpeechProgress;
+        _speech.SpeakCompleted += OnSpeakCompleted;
 
         Loaded += (_, __) => Dispatcher.BeginInvoke(InitHighlight);
+
+        _highlightTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(40)
+        };
+
+        _highlightTimer.Tick += (s, e) =>
+        {
+            if (!_hasPendingHighlight || _highlightService == null || Reader.Document == null)
+                return;
+
+            _hasPendingHighlight = false;
+
+            var pointer = FlowDocumentNavigator.GetPointerAtOffset(
+                Reader.Document,
+                _lastOffset);
+
+            if (pointer == null)
+                return;
+
+            _highlightService.Highlight(pointer);
+        };
+
+        _highlightTimer.Start();
 
         foreach (var item in _appData.Vocabulary)
         {
@@ -135,6 +169,7 @@ public partial class MainWindow : Window
 
         EditorStateService.UpdateTitle(this, _state);
         UpdateModeButton();
+        UpdatePageUI();
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -323,7 +358,11 @@ public partial class MainWindow : Window
         Thread.Sleep(50);
         _speech?.Dispose();
 
+        Editor.TextChanged -= Editor_TextChanged;
+        Editor.SelectionChanged -= Editor_SelectionChanged;
+
         _speech.ProgressChanged -= OnSpeechProgress;
+
         _highlightService?.Dispose(); 
 
 
@@ -383,12 +422,18 @@ public partial class MainWindow : Window
 
     private void SetMode(AppMode mode)
     {
+        _highlightService?.Dispose();
+        _highlightService = null;
+
         _currentMode = mode;
 
         switch (mode)
         {
             case AppMode.Edit:
-                Reader.Document = null;
+                _highlightService?.Dispose();
+                _highlightService = null;
+
+                Reader.Document = new FlowDocument();
 
                 ReaderContainer.Visibility = Visibility.Collapsed;
                 ReadingToolbar.Visibility = Visibility.Collapsed;
@@ -417,10 +462,18 @@ public partial class MainWindow : Window
         Reader.Margin = new Thickness(0);
     }
 
+
     private void SwitchToReader()
     {
 
-        Reader.Document = CloneFlowDocument(Editor.Document);
+        _readingSession = new ReadingSession();
+
+        var readingDoc =
+            ReadingDocumentBuilder.Build(Editor.Document);
+
+        _readingSession.Open(readingDoc);
+
+        Reader.Document = _readingSession.GetCurrentPage();
 
         Editor.Visibility = Visibility.Collapsed;
         NotebookList.Visibility = Visibility.Collapsed;
@@ -435,7 +488,19 @@ public partial class MainWindow : Window
 
         Reader.Document.PageWidth = double.NaN;
         Reader.UpdateLayout();
+
+        _highlightService?.Dispose();
+        _highlightService = new SpeechHighlightService(Reader);
+        _highlightService.Init(Reader);
+
+        var reading = ReadingDocumentBuilder.Build(Editor.Document);
+        var manager = new PageManager(reading);
+
+        var page = manager.GetCurrentPage();
+
+        Reader.Document = PageRenderer.Render(page);
     }
+
 
     private FlowDocument? CloneFlowDocument(FlowDocument original)
     {
@@ -478,9 +543,9 @@ public partial class MainWindow : Window
     {
         if (_isSettingsApplying) return;
 
-        string text = GetCleanText(Reader.Document);
+        _isSpeakingPage = true;
 
-        _speech.Read(text);
+        StartSpeakingCurrentPage();
     }
 
     private void Pause_Click(object sender, RoutedEventArgs e)
@@ -493,23 +558,15 @@ public partial class MainWindow : Window
         _speech.Resume();
     }
 
-    private async void Stop_Click(object sender, RoutedEventArgs e)
+    private void Stop_Click(object sender, RoutedEventArgs e)
     {
-        if (_isStopping) return; // защита от повторных нажатий
+        _isSpeakingPage = false;
 
-        _isStopping = true;
+        _speech.Stop();
 
-        // Остановка синтезатора в фоновом потоке
-        await Task.Run(() => _speech.Stop());
-
-        // Небольшая пауза, чтобы все события прогресса успели завершиться
-        await Task.Delay(50);
-
-        // Очистка подсветки – теперь безопасно, UI не заблокирован
-        _highlightService.Clear();
-
-        _isStopping = false;
+        _highlightService?.Clear();
     }
+
     private async Task RestartSpeechAsync()
     {
         if (_isSettingsApplying) return;
@@ -529,15 +586,8 @@ public partial class MainWindow : Window
         if (_isStopping || _highlightService == null || Reader.Document == null)
             return;
 
-
-        var pointer = FlowDocumentNavigator.GetPointerAtOffset(
-            Reader.Document,
-            offset);
-
-        if (pointer == null)
-            return;
-
-        _highlightService.Highlight(pointer);
+        _lastOffset = offset;
+        _hasPendingHighlight = true;
     }
 
     private string GetCleanText(FlowDocument document)
@@ -666,5 +716,83 @@ public partial class MainWindow : Window
     }
     #endregion
 
+    #region NEWSYSTEM
+
+    private void NextPage_Click(object sender, RoutedEventArgs e)
+    {
+        if (_readingSession == null)
+            return;
+
+        if (_readingSession.NextPage())
+        {
+            Reader.Document = _readingSession.GetCurrentPage();
+        }
+        UpdatePageUI();
+    }
+
+    private void PreviousPage_Click(object sender, RoutedEventArgs e)
+    {
+        if (_readingSession == null)
+            return;
+
+        if (_readingSession.PreviousPage())
+        {
+            Reader.Document = _readingSession.GetCurrentPage();
+        }
+
+        UpdatePageUI();
+    }
+
+    private void OnSpeakCompleted()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            if (_readingSession == null)
+                return;
+
+            if (_readingSession.NextPage())
+            {
+                Reader.Document = _readingSession.GetCurrentPage();
+
+                StartSpeakingCurrentPage();
+            }
+            else
+            {
+                _isSpeakingPage = false;
+            }
+        });
+    }
+
+    private void StartSpeakingCurrentPage()
+    {
+        if (_readingSession == null)
+            return;
+
+        string text = GetCleanText(Reader.Document);
+
+        _speech.Read(text);
+    }
+
+    private void UpdatePageUI()
+    {
+        if (_readingSession == null) return;
+
+        PageIndicator.Text =
+            $"{_readingSession.CurrentPageIndex + 1} / {_readingSession.TotalPages}";
+    }
+
+    private void GoToPage_Click(object sender, RoutedEventArgs e)
+    {
+        if (int.TryParse(PageBox.Text, out int page))
+        {
+            if (_readingSession.GoToPage(page - 1))
+            {
+                Reader.Document = _readingSession.GetCurrentPage();
+                UpdatePageUI();
+            }
+        }
+    }
+
+    #endregion
 
 }

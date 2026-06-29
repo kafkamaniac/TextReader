@@ -5,6 +5,8 @@ public class SpeechService : IDisposable
     private readonly SpeechSynthesizer _synthesizer;
 
     public event Action<int> ProgressChanged;
+
+    public event Action SpeakCompleted;
     public SpeechService()
     {
         _synthesizer = new SpeechSynthesizer
@@ -13,10 +15,8 @@ public class SpeechService : IDisposable
             Rate = 0
         };
 
-        _synthesizer.SpeakProgress += (s, e) =>
-        {
-            ProgressChanged?.Invoke(e.CharacterPosition);
-        };
+        _synthesizer.SpeakCompleted += Synth_SpeakCompleted;
+        _synthesizer.SpeakProgress += Synth_SpeakProgress;
     }
 
     public IEnumerable<InstalledVoice> GetVoices()
@@ -30,6 +30,7 @@ public class SpeechService : IDisposable
             return;
 
         _synthesizer.SpeakAsyncCancelAll();
+
         _synthesizer.SpeakAsync(text);
     }
 
@@ -64,12 +65,27 @@ public class SpeechService : IDisposable
     }
     public void Dispose()
     {
+
         try
         {
+            ProgressChanged = null;
+
+            _synthesizer.SpeakCompleted -= Synth_SpeakCompleted;
+            _synthesizer.SpeakProgress -= Synth_SpeakProgress;
+
             _synthesizer.SpeakAsyncCancelAll();
             _synthesizer.Dispose();
         }
         catch { }
     }
 
+    private void Synth_SpeakProgress(object sender, SpeakProgressEventArgs e)
+    {
+        ProgressChanged?.Invoke(e.CharacterPosition);
+    }
+
+    private void Synth_SpeakCompleted(object sender, SpeakCompletedEventArgs e)
+    {
+        SpeakCompleted?.Invoke();
+    }
 }

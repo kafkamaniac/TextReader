@@ -51,6 +51,16 @@
                         Click="ReadScroll_Click"
                         Margin="5"/>
 
+                <Button Content="◀ Prev"
+        Click="PreviousPage_Click"/>
+
+                <TextBlock x:Name="PageIndicator"/>
+                <TextBox x:Name="PageBox" Width="50"/>
+                <Button Content="Go" Click="GoToPage_Click"/>
+
+                <Button Content="Next ▶"
+        Click="NextPage_Click"/>
+
             </StackPanel>
         </Border>
 

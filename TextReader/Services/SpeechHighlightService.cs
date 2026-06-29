@@ -10,13 +10,21 @@ using System.Windows.Threading;
         private HighlightAdorner _adorner;
         private AdornerLayer _layer;
 
-        public SpeechHighlightService(RichTextBox box)
-        {
-            _box = box;
-        }
+        private bool _disposed;
+        private int _version;
+
+    public SpeechHighlightService(RichTextBox box)
+            {
+                _box = box;
+            }
 
     public void Init(RichTextBox box)
     {
+        if (_disposed) return;
+
+
+        _version++;
+
         _layer = AdornerLayer.GetAdornerLayer(box);
 
         if (_layer == null)
@@ -30,32 +38,31 @@ using System.Windows.Threading;
     }
 
     public void Highlight(TextPointer pointer)
-        {
-            if (_adorner == null || pointer == null)
-                return;
+    {
+        if (_disposed || _adorner == null || pointer == null)
+            return;
 
-        _box.Dispatcher.BeginInvoke(new Action(() =>
-        {
-            _box.UpdateLayout();
 
-                Rect rect = pointer.GetCharacterRect(LogicalDirection.Forward);
+        Rect rect = pointer.GetCharacterRect(LogicalDirection.Forward);
 
-                if (rect.IsEmpty)
-                    return;
+        if (rect.IsEmpty)
+            return;
 
-                rect = new Rect(0, rect.Top, _box.ActualWidth, rect.Height);
+        rect = new Rect(0, rect.Top, _box.ActualWidth, rect.Height);
 
-                _adorner.Update(rect);
-            }), DispatcherPriority.Background);
+        _adorner.Update(rect);
     }
 
-        public void Clear()
+    public void Clear()
         {
             _adorner?.Clear();
         }
 
     public void Dispose()
     {
+        _disposed = true;
+        _version++;
+
         if (_layer != null && _adorner != null)
         {
             _layer.Remove(_adorner);
@@ -63,5 +70,7 @@ using System.Windows.Threading;
 
         _adorner = null;
         _layer = null;
+
+
     }
 }
