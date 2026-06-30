@@ -46,6 +46,10 @@ public partial class MainWindow : Window
     private bool _isSpeakingPage;
     private int _ttsResumePageIndex = -1;
     private bool _isPaused;
+    private TextPointer _pendingLineStart;
+    private TextPointer _pausePointer;
+    private int _startOffset; // смещение начала читаемого текста в документе
+    private TextPointer _currentStartPointer; // начало читаемого текста (для паузы)
 
     private AppMode _currentMode = AppMode.Edit;
 
@@ -541,24 +545,23 @@ public partial class MainWindow : Window
 
     #region TEXT_TO_SPEECH
     private void TextToSpeech_Click(object sender, RoutedEventArgs e)
-    {
-        if (_isSettingsApplying) return;
+        {
+            if (_isSettingsApplying) return;
+            if (_isTtsRunning) return;
 
-        if (_isTtsRunning)
-            return;
+            _isTtsRunning = true;
+            _isSpeakingPage = true;
 
-        _isTtsRunning = true;
-        _isSpeakingPage = true;
 
-        StartSpeakingCurrentPage();
-    }
+            StartSpeakingCurrentPage();
+        }
 
     private void Pause_Click(object sender, RoutedEventArgs e)
     {
         _speech.Pause();
         _isPaused = true;
 
-        _ttsResumePageIndex = _readingSession.CurrentPageIndex;
+        _pausePointer = _currentStartPointer ?? Reader.Document.ContentStart;
     }
 
     private void Resume_Click(object sender, RoutedEventArgs e)
@@ -569,24 +572,16 @@ public partial class MainWindow : Window
         _speech.Resume();
         _isPaused = false;
 
-        if (_ttsResumePageIndex >= 0 &&
-            _ttsResumePageIndex != _readingSession.CurrentPageIndex)
-        {
-            _readingSession.GoToPage(_ttsResumePageIndex);
-
-            Reader.Document = _readingSession.GetCurrentPage();
-            UpdatePageUI();
-        }
     }
 
     private void Stop_Click(object sender, RoutedEventArgs e)
     {
         _isSpeakingPage = false;
         _isTtsRunning = false;
-
         _speech.Stop();
-
         _highlightService?.Clear();
+        _startOffset = 0;
+        _currentStartPointer = null;
     }
 
     private async Task RestartSpeechAsync()
@@ -608,7 +603,8 @@ public partial class MainWindow : Window
         if (_isStopping || _highlightService == null || Reader.Document == null)
             return;
 
-        _lastOffset = offset;
+        int totalOffset = _startOffset + offset;
+        _lastOffset = totalOffset;
         _hasPendingHighlight = true;
     }
 
@@ -636,6 +632,12 @@ public partial class MainWindow : Window
         if (selection == null)
         {
             TranslatePopup.IsOpen = false;
+            return;
+        }
+
+        if (e.ChangedButton == MouseButton.Right)
+        {
+            HandleRightClickHighlight();
             return;
         }
 
@@ -796,14 +798,30 @@ public partial class MainWindow : Window
         if (!_isTtsRunning)
             return;
 
-        _isTtsRunning = true;
-        _ttsResumePageIndex = _readingSession.CurrentPageIndex;
+        TextPointer start = _pendingLineStart ?? Reader.Document.ContentStart;
+        _pendingLineStart = null;
+        _currentStartPointer = start; // сохраняем для паузы
+                                      
+        // Вычисляем смещение начала в документе
+        _startOffset = new TextRange(Reader.Document.ContentStart, start).Text.Length;
 
-        string text = GetCleanText(Reader.Document);
+        string text = new TextRange(start, Reader.Document.ContentEnd).Text;
 
         _speech.Read(text);
     }
 
+    private void HandleRightClickHighlight()
+    {
+        Point clickPoint = Mouse.GetPosition(Reader);
+
+        TextPointer pointer = Reader.GetPositionFromPoint(clickPoint, true);
+        if (pointer == null)
+            return;
+
+        _pendingLineStart = pointer.GetLineStartPosition(0);
+
+        _highlightService?.Highlight(_pendingLineStart);
+    }
     private void UpdatePageUI()
     {
         if (_readingSession == null) return;
