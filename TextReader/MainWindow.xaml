@@ -273,6 +273,14 @@
 
                                     <TextBlock Text="{Binding Created, StringFormat={}{0:dd.MM HH:mm}}"
                                                Grid.Column="2"/>
+                                    
+                                    <Grid.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Удалить"
+                                                      Click="DeleteBookmark_Click"/>
+                                        </ContextMenu>
+                                    </Grid.ContextMenu>
+
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
