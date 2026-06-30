@@ -22,6 +22,7 @@ public partial class MainWindow : Window
 {
     private readonly EditorState _state = new();
     private readonly SpeechService _speech = new();
+    private readonly BookLibraryService _library = new();
     private SpeechHighlightService _highlightService;
 
     private volatile bool _isStopping;
@@ -153,7 +154,10 @@ public partial class MainWindow : Window
 
         if (extension == ".docx")
         {
-            Editor.Document = FileService.LoadDocxAsFlowDocument(dialog.FileName);
+            BookInfo book = _library.ImportBook(dialog.FileName);
+
+            Editor.Document =
+                FileService.LoadDocxAsFlowDocument(book.FilePath);
 
             SetMode(AppMode.ReadScroll);
 
