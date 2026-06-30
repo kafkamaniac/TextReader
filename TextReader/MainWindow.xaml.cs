@@ -886,7 +886,24 @@ public partial class MainWindow : Window
         Reader.Document = _readingSession.GetCurrentPage();
 
         UpdatePageUI();
+
+        HighlightBookmark(bm);
     }
+
+    private void HighlightBookmark(Bookmark bm)
+    {
+        if (Reader.Document == null)
+            return;
+
+        var pointer = FlowDocumentNavigator.FindWordPointer(Reader.Document, bm.Name);
+
+        if (pointer == null)
+            return;
+
+        _highlightService?.Clear(); 
+        _highlightService.Highlight(pointer);
+    }
+
     #endregion
 
 }

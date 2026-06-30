@@ -252,8 +252,33 @@
                        DockPanel.Dock="Top"/>
 
                     <ListBox x:Name="BookmarksList"
-                     DisplayMemberPath="Name"
-                     MouseDoubleClick="Bookmark_DoubleClick"/>
+         MouseDoubleClick="Bookmark_DoubleClick">
+
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="{Binding Name}"
+                                               Grid.Column="0"
+                                               Margin="0,0,5,0"/>
+
+                                    <TextBlock Text="{Binding PageDisplay, StringFormat=стр. {0}}"
+                                               Grid.Column="1"
+                                               Margin="0,0,5,0"/>
+
+                                    <TextBlock Text="{Binding Created, StringFormat={}{0:dd.MM HH:mm}}"
+                                               Grid.Column="2"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+
+                    </ListBox>
+                    
                 </DockPanel>
 
             </Border>
