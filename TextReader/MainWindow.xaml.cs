@@ -23,6 +23,12 @@ public partial class MainWindow : Window
     private readonly EditorState _state = new();
     private readonly SpeechService _speech = new();
     private readonly BookLibraryService _library = new();
+
+    private BookmarkService _bookmarkService = new();
+    private BookInfo _currentBook;
+    private ReadingSession _readingSession;
+
+
     private SpeechHighlightService _highlightService;
 
     private volatile bool _isStopping;
@@ -43,7 +49,6 @@ public partial class MainWindow : Window
 
     private AppMode _currentMode = AppMode.Edit;
 
-    private ReadingSession _readingSession;
     public enum AppMode
     {
         Edit,
@@ -155,6 +160,8 @@ public partial class MainWindow : Window
         if (extension == ".docx")
         {
             BookInfo book = _library.ImportBook(dialog.FileName);
+
+            _currentBook = book;
 
             Editor.Document =
                 FileService.LoadDocxAsFlowDocument(book.FilePath);
@@ -668,6 +675,27 @@ public partial class MainWindow : Window
         MessageBox.Show(System.Windows.Application.Current.FindResource("AddedToNotebook").ToString());
     }
 
+    private void AddBookmark_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentBook == null)
+            return;
+
+        Bookmark bookmark = new Bookmark
+        {
+            BookId = _currentBook.Id,
+            Name = _currentWord,
+            Page = _readingSession.CurrentPageIndex
+        };
+
+        _bookmarkService.Add(bookmark);
+
+        LoadBookmarks();
+
+        TranslatePopup.IsOpen = false;
+
+        MessageBox.Show("Закладка добавлена.");
+    }
+
     private bool _isNotebookOpen = false;
 
     private void ToggleNotebook_Click(object sender, RoutedEventArgs e)
@@ -814,6 +842,51 @@ public partial class MainWindow : Window
         }
     }
 
+    #endregion
+
+    #region BOOKMARKS
+
+    private bool _bookmarksOpen = false;
+
+    private void ToggleBookmarksPanel(object sender, RoutedEventArgs e)
+    {
+        ToggleBookmarksPanelLogic();
+    }
+    private void ToggleBookmarksPanelLogic()
+    {
+        if (_bookmarksOpen)
+            BookmarksColumn.Width = new GridLength(0);
+        else
+        {
+            BookmarksColumn.Width = new GridLength(250);
+            LoadBookmarks();
+        }
+
+        _bookmarksOpen = !_bookmarksOpen;
+    }
+
+    private void LoadBookmarks()
+    {
+        if (_currentBook == null)
+            return;
+
+        var bookmarks = _bookmarkService
+            .GetBookmarks(_currentBook.Id);
+
+        BookmarksList.ItemsSource = bookmarks;
+    }
+
+    private void Bookmark_DoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (BookmarksList.SelectedItem is not Bookmark bm)
+            return;
+
+        _readingSession.GoToPage(bm.Page);
+
+        Reader.Document = _readingSession.GetCurrentPage();
+
+        UpdatePageUI();
+    }
     #endregion
 
 }

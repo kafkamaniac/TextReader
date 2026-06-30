@@ -185,6 +185,9 @@
                     Click="StartTraining_Click"
                     Margin="5,0,0,0"/>
 
+            <Button Content="Закладки"
+                    Click="ToggleBookmarksPanel"/>
+
         </StackPanel>
 
         <RichTextBox x:Name="Editor"
@@ -215,6 +218,9 @@
                     <Button Content="{DynamicResource AddWordToNotebook}"
                     Click="AddToNotebook_Click"
                     Padding="5"/>
+                    
+                    <Button Content="Закладка"
+                            Click="AddBookmark_Click"/>
                 </StackPanel>
             </Border>
 
@@ -224,12 +230,33 @@
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="0" x:Name="BookmarksColumn" />
             </Grid.ColumnDefinitions>
+            
             <AdornerDecorator>
             <RichTextBox x:Name="Reader"
                  HorizontalAlignment="Stretch"
                  VerticalAlignment="Stretch"/>
             </AdornerDecorator>
+
+            <Border Grid.Column="1"
+            Background="#222"
+            Width="250">
+
+                <DockPanel>
+
+                    <TextBlock Text="Закладки"
+                       Foreground="White"
+                       FontSize="16"
+                       Margin="10"
+                       DockPanel.Dock="Top"/>
+
+                    <ListBox x:Name="BookmarksList"
+                     DisplayMemberPath="Name"
+                     MouseDoubleClick="Bookmark_DoubleClick"/>
+                </DockPanel>
+
+            </Border>
         </Grid>
 
         <ListBox x:Name="NotebookList"

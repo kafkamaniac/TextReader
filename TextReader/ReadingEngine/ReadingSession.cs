@@ -8,6 +8,8 @@ public class ReadingSession
     public event Action<int>? OnPageChanged;
 
     public int CurrentPageIndex => _pageManager.CurrentPage;
+
+    public PageModel CurrentPageModel => _pageManager.Current;
     public int TotalPages => _pageManager.PageCount;
 
     public void Open(ReadingDocument doc)
